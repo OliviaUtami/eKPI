@@ -284,5 +284,9 @@ class Pages extends CI_Controller {
 		);
 		$this->load->view('pages/draft-add', $data);
 	}
+	public function process_draft_add(){
+		var_dump($_POST);
+exit();
+	}
 	/** PAGE DRAFT - END */
 }

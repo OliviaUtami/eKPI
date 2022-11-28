@@ -83,11 +83,7 @@ $this->load->view('pages/_partials/header');
                   <div class="row">
                     <div class="form-group col-md-5">
                         <label>Draft Name</label>
-                        <input type="text" class="form-control" name="name" autocomplete="off" required>
-                    </div>
-                    <div class="form-group col-md-5">
-                        <label>Email</label>
-                        <input type="text" class="form-control" name="email" autocomplete="off" required>
+                        <input type="text" class="form-control" id="name" name="name" autocomplete="off" required>
                     </div>
                   </div>
                   <div class="row">
@@ -110,7 +106,7 @@ $this->load->view('pages/_partials/header');
                   
                 </div>
                 <div class="card-footer bg-whitesmoke">
-                  <button type="submit" class="btn btn-primary">SAVE</button>
+                  <button type="button" id="btn-save" class="btn btn-primary">SAVE</button>
                 </div>
               </div>
             </form>
@@ -149,7 +145,23 @@ $this->load->view('pages/_partials/header');
       }
     );*/
   });
-
+  $(document).on("click","#btn-save",function(){
+    var param = {
+      name: $("#name").val().trim(),
+      details: misi
+    };
+    $.ajax({
+      url: 'add/process',
+      type: 'POST',       
+      data: param,
+      success: function(data) {
+        console.log(data);
+      },
+      error: function(data) {
+          console.log(data);
+      }
+  });
+  });
   function openModalMisi(tempid=0){
     $("#modal-tambah-misi #inpTempID").val(tempid);
     $("#inpMission").val("");

@@ -77,6 +77,7 @@ $route['period/edit/process']['post'] = 'pages/process_period_edit';
 //draft
 $route['draft'] = 'pages/view_draft_list';
 $route['draft/add'] = 'pages/view_draft_add';
+$route['draft/add/process']['post'] = 'pages/process_draft_add';
 $route['indicator/edit/(:num)'] = 'pages/view_indicator_edit/$1';
 $route['indicator/edit/process']['post'] = 'pages/process_indicator_edit';
 $route['indicator/delete/(:num)'] = 'pages/process_indicator_delete/$1';
