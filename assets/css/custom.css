@@ -1,0 +1,50 @@
+/**
+ *
+ * You can write your CSS code here, DO NOT touch the default JavaScript file
+ * because it will make it harder for you to update.
+ * 
+ */
+
+/*# sourceMappingURL=custom.css.map */
+.main-sidebar .sidebar-menu li a span {
+    margin-top: 3px;
+    width: 100%;
+    margin-left: 10px;
+}
+label.error {
+    margin-left: 10px;
+    width: auto;
+    display: inline;
+    color: red;
+}
+table.dataTable {
+    font-size: 12px;
+}
+table.dataTable td {
+    padding: 8px;
+}
+table.dataTable th {
+    padding: 8px;
+}
+.table:not(.table-sm) thead th{
+    padding-top: 8px;
+    padding-bottom: 8px;
+}
+table.dataTable thead .sorting::before, table.dataTable thead .sorting::after, table.dataTable thead .sorting_asc::before, table.dataTable thead .sorting_asc::after, table.dataTable thead .sorting_desc::before, table.dataTable thead .sorting_desc::after, table.dataTable thead .sorting_asc_disabled::before, table.dataTable thead .sorting_asc_disabled::after, table.dataTable thead .sorting_desc_disabled::before, table.dataTable thead .sorting_desc_disabled::after{
+    bottom: 0.7em !important;
+}
+.btn.btn-sm{
+    line-height: 20px;
+    padding: 0rem 0.3rem;
+    font-size: 12px;
+}
+.fa, .fas {
+    font-weight: 100;
+}
+.table:not(.table-sm):not(.table-md):not(.dataTable) td, .table:not(.table-sm):not(.table-md):not(.dataTable) th{
+    height: 30px;
+    padding: 4px;
+}
+.btn-group > .btn.btn-sm{
+    width: 24px !important;
+}
