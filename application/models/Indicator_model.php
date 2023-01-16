@@ -20,7 +20,7 @@ class indicator_model extends CI_Model {
     $data = $this->db->query($sql,array($org_id, $draft_id))->row();
     
     $sqlTarget = "SELECT 
-                  t.target_id id, t.name nama
+                  t.target_id id, t.code, t.name nama
                 FROM `target` t
                 JOIN `purpose` p ON  t.purpose_id = p.purpose_id
                 JOIN `mission` m on p.mission_id = m.mission_id
@@ -32,7 +32,25 @@ class indicator_model extends CI_Model {
     
     return $data;
   }
-  
+
+  public function get_program_by_target($target_id){
+    $sql = "SELECT 
+              t.target_id id, t.code kode, t.name nama
+            FROM `target` t
+            WHERE t.target_id = ?
+            ORDER BY t.target_id ASC";
+    $data = new stdClass();
+    $data = $this->db->query($sql,array($target_id))->row();
+    $data-> ok = 1;
+    $sql = "SELECT 
+              p.program_id id, p.code kode, p.name nama
+            FROM `program` p
+            WHERE p.target_id = ?
+            ORDER BY p.program_id ASC";
+    $data->program =  $this->db->query($sql,array($target_id))->result();
+    return $data;
+  }
+
   public function add_draft($draft_name, $arrmission){
     $message = ""; $ok = 1;
     //$exist = $this->db->query("SELECT COUNT(1) count FROM period WHERE period_from = ? and is_active = 1",array($username))->row();

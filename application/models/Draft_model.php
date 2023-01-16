@@ -18,7 +18,7 @@ class draft_model extends CI_Model {
     $data = $this->db->query($sql,array($draft_id))->row();
     
     $sqlMisi = "SELECT 
-                mission_id id, name nama, created_by, DATE_FORMAT(created_at, '%d/%m/%Y %H:%i:%s') created_at,
+                mission_id id, code, name nama, created_by, DATE_FORMAT(created_at, '%d/%m/%Y %H:%i:%s') created_at,
                 updated_by, DATE_FORMAT(updated_at, '%d/%m/%Y %H:%i:%s') created_at, status,
                 approved_by, DATE_FORMAT(approved_at, '%d/%m/%Y %H:%i:%s') approved_at
             FROM `mission` m
@@ -27,7 +27,7 @@ class draft_model extends CI_Model {
     $missions = $this->db->query($sqlMisi,array($draft_id))->result();
     foreach($missions as $mission){
       $sqlTujuan = "SELECT 
-                      purpose_id id, name nama, created_by, DATE_FORMAT(created_at, '%d/%m/%Y %H:%i:%s') created_at,
+                      purpose_id id, code, name nama, created_by, DATE_FORMAT(created_at, '%d/%m/%Y %H:%i:%s') created_at,
                       updated_by, DATE_FORMAT(updated_at, '%d/%m/%Y %H:%i:%s') created_at, status,
                       approved_by, DATE_FORMAT(approved_at, '%d/%m/%Y %H:%i:%s') approved_at
                   FROM `purpose` p
@@ -38,7 +38,7 @@ class draft_model extends CI_Model {
 
       foreach($purposes as $purpose){
         $sqlTarget = "SELECT 
-                        target_id id, name nama, created_by, DATE_FORMAT(created_at, '%d/%m/%Y %H:%i:%s') created_at,
+                        target_id id, code, name nama, created_by, DATE_FORMAT(created_at, '%d/%m/%Y %H:%i:%s') created_at,
                         updated_by, DATE_FORMAT(updated_at, '%d/%m/%Y %H:%i:%s') created_at, status,
                         approved_by, DATE_FORMAT(approved_at, '%d/%m/%Y %H:%i:%s') approved_at
                     FROM `target` t
@@ -49,7 +49,7 @@ class draft_model extends CI_Model {
 
         foreach($targets as $target){
           $sqlProgram = "SELECT 
-                          program_id id, name nama, created_by, DATE_FORMAT(created_at, '%d/%m/%Y %H:%i:%s') created_at,
+                          program_id id, code, name nama, created_by, DATE_FORMAT(created_at, '%d/%m/%Y %H:%i:%s') created_at,
                           updated_by, DATE_FORMAT(updated_at, '%d/%m/%Y %H:%i:%s') created_at, status,
                           approved_by, DATE_FORMAT(approved_at, '%d/%m/%Y %H:%i:%s') approved_at
                       FROM `program` p
@@ -84,38 +84,41 @@ class draft_model extends CI_Model {
       $message = "User with same user name exists";
     }else{
       $sql = "INSERT INTO draft 
-                (name, created_by, status)
+                (code, name, created_by, status)
               VALUES (?, ?, ?)";
       $this->db->query($sql, array($draft_name, $_SESSION["username"], 'Draft'));
       $draft_id = $this->db->insert_id();
+      $t = 1; $s = 1;
       for ($i=0; $i < count($arrmission); $i++) { 
         $sql = "INSERT INTO mission 
-                  (draft_id, name, created_by, status)
-                VALUES (?, ?, ?, ?)";
-        $this->db->query($sql, array($draft_id, $arrmission[$i]->nama, $_SESSION["username"], 'Draft'));
+                  (draft_id, code, name, created_by, status)
+                VALUES (?, ?, ?, ?, ?)";
+        $this->db->query($sql, array($draft_id, "M".($i+1), $arrmission[$i]->nama, $_SESSION["username"], 'Draft'));
         $mission_id = $this->db->insert_id();
         $arrtujuan = $arrmission[$i]->tujuan;
         for ($j=0; $j < count($arrtujuan); $j++) { 
           $sql = "INSERT INTO purpose 
-                    (mission_id, name, created_by, status)
-                  VALUES (?, ?, ?, ?)";
-          $this->db->query($sql, array($mission_id, $arrtujuan[$j]->nama, $_SESSION["username"], 'Draft'));
+                    (mission_id, code, name, created_by, status)
+                  VALUES (?, ?, ?, ?, ?)";
+          $this->db->query($sql, array($mission_id, "T".$t, $arrtujuan[$j]->nama, $_SESSION["username"], 'Draft'));
           $purpose_id = $this->db->insert_id();
           $arrtarget = $arrtujuan[$j]->target;
           for ($k=0; $k < count($arrtarget); $k++) { 
             $sql = "INSERT INTO target 
-                      (purpose_id, name, created_by, status)
-                    VALUES (?, ?, ?, ?)";
-            $this->db->query($sql, array($purpose_id, $arrtarget[$k]->nama, $_SESSION["username"], 'Draft'));
+                      (purpose_id, code, name, created_by, status)
+                    VALUES (?, ?, ?, ?, ?)";
+            $this->db->query($sql, array($purpose_id, "S".$s, $arrtarget[$k]->nama, $_SESSION["username"], 'Draft'));
             $target_id = $this->db->insert_id();
             $arrprogram = $arrtarget[$k]->program;
             for ($l=0; $l < count($arrprogram); $l++) { 
               $sql = "INSERT INTO program 
-                        (target_id, name, created_by, status)
+                        (target_id, code, name, created_by, status)
                       VALUES (?, ?, ?, ?)";
-              $this->db->query($sql, array($target_id, $arrprogram[$k]->nama, $_SESSION["username"], 'Draft'));
+              $this->db->query($sql, array($target_id, "P".$s.".".($l+1), $arrprogram[$k]->nama, $_SESSION["username"], 'Draft'));
             }
+            $s++;
           }
+          $t++;
         }
       }
       $message = "Draft berhasil ditambbahkan";
@@ -145,35 +148,37 @@ class draft_model extends CI_Model {
       $sql = "DELETE FROM mission 
               WHERE draft_id = ?";
       $this->db->query($sql, array($draft_id));
-
+      $t = 1; $s = 1;
       for ($i=0; $i < count($arrmission); $i++) { 
         $sql = "INSERT INTO mission 
-                  (draft_id, name, created_by, status)
-                VALUES (?, ?, ?, ?)";
-        $this->db->query($sql, array($draft_id, $arrmission[$i]->nama, $_SESSION["username"], 'Draft'));
+                  (draft_id, code, name, created_by, status)
+                VALUES (?, ?, ?, ?, ?)";
+        $this->db->query($sql, array($draft_id, "M".($i+1), $arrmission[$i]->nama, $_SESSION["username"], 'Draft'));
         $mission_id = $this->db->insert_id();
         $arrtujuan = $arrmission[$i]->tujuan;
         for ($j=0; $j < count($arrtujuan); $j++) { 
           $sql = "INSERT INTO purpose 
-                    (mission_id, name, created_by, status)
-                  VALUES (?, ?, ?, ?)";
-          $this->db->query($sql, array($mission_id, $arrtujuan[$j]->nama, $_SESSION["username"], 'Draft'));
+                    (mission_id, code, name, created_by, status)
+                  VALUES (?, ?, ?, ?, ?)";
+          $this->db->query($sql, array($mission_id, "T".$t, $arrtujuan[$j]->nama, $_SESSION["username"], 'Draft'));
           $purpose_id = $this->db->insert_id();
           $arrtarget = $arrtujuan[$j]->target;
           for ($k=0; $k < count($arrtarget); $k++) { 
             $sql = "INSERT INTO target 
-                      (purpose_id, name, created_by, status)
-                    VALUES (?, ?, ?, ?)";
-            $this->db->query($sql, array($purpose_id, $arrtarget[$k]->nama, $_SESSION["username"], 'Draft'));
+                      (purpose_id, code, name, created_by, status)
+                    VALUES (?, ?, ?, ?, ?)";
+            $this->db->query($sql, array($purpose_id, "S".$s, $arrtarget[$k]->nama, $_SESSION["username"], 'Draft'));
             $target_id = $this->db->insert_id();
             $arrprogram = $arrtarget[$k]->program;
             for ($l=0; $l < count($arrprogram); $l++) { 
               $sql = "INSERT INTO program 
-                        (target_id, name, created_by, status)
-                      VALUES (?, ?, ?, ?)";
-              $this->db->query($sql, array($target_id, $arrprogram[$l]->nama, $_SESSION["username"], 'Draft'));
+                        (target_id, code, name, created_by, status)
+                      VALUES (?, ?, ?, ?, ?)";
+              $this->db->query($sql, array($target_id, "P".$s.".".($l+1), $arrprogram[$l]->nama, $_SESSION["username"], 'Draft'));
             }
+            $s++;
           }
+          $t++;
         }
       }
       $message = "Draft berhasil diperbarui";

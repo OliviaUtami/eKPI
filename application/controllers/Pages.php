@@ -468,5 +468,16 @@ class Pages extends CI_Controller {
 		$this->load->view('pages/indicator-edit', $data);
 	}
 	
+	public function get_program_by_target(){
+		$this->check_login();
+		$this->load->model('indicator_model');
+		
+		$json = file_get_contents('php://input');
+		$obj = json_decode($json);
+		$target_id = $obj->target_id;
+		
+		$data = $this->indicator_model->get_program_by_target($target_id);
+		echo json_encode($data);
+	}
 	/** PAGE INDICATOR - END */
 }

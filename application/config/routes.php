@@ -96,3 +96,4 @@ $route['indicator/delete/(:num)'] = 'pages/process_indicator_delete/$1';
 //indicator
 $route['indicator'] = 'pages/view_indicator_list';
 $route['indicator/edit/(:num)'] = 'pages/view_indicator_edit/$1';
+$route['indicator/api/get_program']['post'] = 'pages/get_program_by_target';

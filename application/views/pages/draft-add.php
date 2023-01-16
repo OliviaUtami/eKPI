@@ -445,6 +445,7 @@ $this->load->view('pages/_partials/header');
     //$("#table-misi").DataTable().clear();
     //$("#table-misi").DataTable().destroy();
     var html_misi = "";
+    var t=1; s=1;
     for(var i=0;i<misi.length; i++){
       var html_tujuan = "";
       for(var j=0;j<misi[i].tujuan.length;j++){
@@ -467,7 +468,7 @@ $this->load->view('pages/_partials/header');
                                 "<tbody>" ;
             }
             html_program += "<tr class='program-"+program.tempid+"'>" +
-                            "<td>P" + (k+1) + "." + (l+1) + "</td>" +
+                            "<td>P" + s + "." + (l+1) + "</td>" +
                             "<td>" + program.nama + "</td>" +
                             "<td>" +
                               //"<button type='button' class='btn btn-sm btn-primary btn-add-program' title='Add Program' onclick='openModalProgram("+misi[i].tempid+","+tujuan.tempid+","+target.tempid+");'>&nbsp;<i class='fa fa-plus'></i>&nbsp;</button>" +
@@ -491,7 +492,7 @@ $this->load->view('pages/_partials/header');
                             "<tbody>" ;
           }
           html_target += "<tr class='target-"+target.tempid+"'>" +
-                          "<td>S" + (k+1) + "</td>" +
+                          "<td>S" + s + "</td>" +
                           "<td>" + target.nama + "</td>" +
                           "<td>" +
                             "<button type='button' class='btn btn-sm btn-primary btn-add-program' title='Add Program' onclick='openModalProgram("+misi[i].tempid+","+tujuan.tempid+","+target.tempid+");'>&nbsp;<i class='fa fa-plus'></i>&nbsp;</button>" +
@@ -505,6 +506,7 @@ $this->load->view('pages/_partials/header');
           if(k==tujuan.target.length-1){
               html_target +="</tbody></table>";
           }
+          s++;
         }
         if(j==0){
           html_tujuan = "<table class='table-tujuan mission-"+misi[i].tempid+" table table-striped table-bordered' cellspacing='0' width='100%'>" +
@@ -518,7 +520,7 @@ $this->load->view('pages/_partials/header');
                           "<tbody>" ;
         }
         html_tujuan += "<tr class='tujuan-"+tujuan.tempid+"'>" +
-                          "<td>T" + (j+1) + "</td>" +
+                          "<td>T" + t + "</td>" +
                           "<td>" + tujuan.nama + "</td>" +
                           "<td>" +
                             "<button type='button' class='btn btn-sm btn-primary btn-add-target' title='Add Purpose' onclick='openModalTarget("+misi[i].tempid+","+tujuan.tempid+");'>&nbsp;<i class='fa fa-plus'></i>&nbsp;</button>" +
@@ -532,6 +534,7 @@ $this->load->view('pages/_partials/header');
         if(j==misi[i].tujuan.length-1){
           html_tujuan +="</tbody></table>";
         }
+        t++;
       }
       html_misi +=   "" +
                   "<tr class='misi-"+misi[i].tempid+"'>" +
