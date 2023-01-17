@@ -37,6 +37,9 @@ $this->load->view('pages/_partials/header');
                             <button class="btn btn-sm btn-warning" onclick="editDraft(<?php echo $data->draft_id; ?>)" title="Edit Draft"><i class="fa fa-edit"></i></button>
                             <button class="btn btn-sm btn-success" onclick="reqApproval(<?php echo $data->draft_id; ?>)" title="Request for Approval"><i class="fa fa-share"></i></button>
                             <?php } ?>
+                            <?php if($data->status=="Disetujui"){ ?>
+                            <button class="btn btn-sm btn-primary" onclick="editDraft(<?php echo $data->draft_id; ?>)" title="View Draft"><i class="fa fa-eye"></i></button>
+                            <?php } ?>
                         </td>
                     </tr>
                 <?php } ?>

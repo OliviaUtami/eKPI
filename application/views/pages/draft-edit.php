@@ -21,8 +21,8 @@ $this->load->view('pages/_partials/header');
         <textarea id="inpMission" class="form-control" autocomplete="off"></textarea>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-primary" onclick="saveMisi()">Save</button>
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" onclick="saveMisi()">Simpan</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
       </div>
     </div>
   </div>
@@ -42,8 +42,8 @@ $this->load->view('pages/_partials/header');
         <textarea id="inpPurpose" class="form-control" autocomplete="off"></textarea>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-primary" onclick="saveTujuan()">Save</button>
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" onclick="saveTujuan()">Simpan</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
       </div>
     </div>
   </div>
@@ -64,8 +64,8 @@ $this->load->view('pages/_partials/header');
         <textarea id="inpTarget" class="form-control" autocomplete="off"></textarea>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-primary" onclick="saveTarget()">Save</button>
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" onclick="saveTarget()">Simpan</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
       </div>
     </div>
   </div>
@@ -87,8 +87,8 @@ $this->load->view('pages/_partials/header');
         <textarea id="inpProgram" class="form-control" autocomplete="off"></textarea>
       </div>
       <div class="modal-footer">
-        <button type="button" class="btn btn-primary" onclick="saveProgram()">Save</button>
-        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+        <button type="button" class="btn btn-primary" onclick="saveProgram()">Simpan</button>
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Tutup</button>
       </div>
     </div>
   </div>
@@ -106,7 +106,7 @@ $this->load->view('pages/_partials/header');
                   <div class="row">
                     <div class="form-group col-md-5">
                         <label>Nama Draft</label>
-                        <input type="text" class="form-control" id="name" name="name" autocomplete="off" value="<?php echo $draft_data->nama; ?>" required>
+                        <input type="text" class="form-control" id="name" name="name" autocomplete="off" value="<?php echo $draft_data->nama; ?>" <?php if($draft_data->status=="Disetujui"){ echo "disabled"; } ?> required>
                         <input type="hidden" class="form-control" id="id" name="id" autocomplete="off" value="<?php echo $draft_data->id; ?>" required>
 
                     </div>
@@ -122,7 +122,9 @@ $this->load->view('pages/_partials/header');
                   <?php } ?>
                   <div class="row">
                     <div class="form-group col-md-12">
+                      <?php if($draft_data->status!=="Disetujui"){ ?>
                       <button type="button" class="btn btn-sm btn-primary" onclick="openModalMisi();"><i class="fa fa-plus"></i></button><br/><br/>
+                      <?php } ?>
                       <table id="table-misi" class="table table-striped table-bordered" cellspacing="0" width="100%">
                         <thead>
                             <tr>
@@ -140,7 +142,9 @@ $this->load->view('pages/_partials/header');
 
                 </div>
                 <div class="card-footer bg-whitesmoke">
+                  <?php if($draft_data->status!=="Disetujui"){ ?>
                   <button type="button" id="btn-save" class="btn btn-primary">Simpan</button>
+                  <?php } ?>
                 </div>
               </div>
             </form>
@@ -501,9 +505,11 @@ $this->load->view('pages/_partials/header');
                             "<td>P" + s + "." + (l+1) + "</td>" +
                             "<td>" + program.nama + "</td>" +
                             "<td>" +
+                              <?php if($draft_data->status!=="Disetujui"){ ?>
                               //"<button type='button' class='btn btn-sm btn-primary btn-add-program' title='Add Program' onclick='openModalProgram("+misi[i].tempid+","+tujuan.tempid+","+target.tempid+");'>&nbsp;<i class='fa fa-plus'></i>&nbsp;</button>" +
                               "<button type='button' class='btn btn-sm btn-warning btn-edit-purpose' title='Edit' onclick='openModalProgram("+misi[i].tempid+","+tujuan.tempid+","+target.tempid+","+program.tempid+");'>&nbsp;<i class='fa fa-edit'></i></button>" +
                               "<button type='button' class='btn btn-sm btn-danger btn-delete-purpose' title='Delete' onclick='deleteProgram("+misi[i].tempid+","+tujuan.tempid+","+target.tempid+","+program.tempid+");'>&nbsp;<i class='fa fa-times'></i>&nbsp;</button>" +
+                              <?php } ?>
                             "</td>" +
                           "</tr>";
             if(l==target.program.length-1){
@@ -525,9 +531,11 @@ $this->load->view('pages/_partials/header');
                           "<td>S" + s + "</td>" +
                           "<td>" + target.nama + "</td>" +
                           "<td>" +
+                          <?php if($draft_data->status!=="Disetujui"){ ?>
                             "<button type='button' class='btn btn-sm btn-primary btn-add-program' title='Tambah Program' onclick='openModalProgram("+misi[i].tempid+","+tujuan.tempid+","+target.tempid+");'>&nbsp;<i class='fa fa-plus'></i>&nbsp;</button>" +
                             "<button type='button' class='btn btn-sm btn-warning btn-edit-purpose' title='Edit' onclick='openModalTarget("+misi[i].tempid+","+tujuan.tempid+","+target.tempid+");'>&nbsp;<i class='fa fa-edit'></i></button>" +
                             "<button type='button' class='btn btn-sm btn-danger btn-delete-purpose' title='Delete' onclick='deleteTarget("+misi[i].tempid+","+tujuan.tempid+","+target.tempid+");'>&nbsp;<i class='fa fa-times'></i>&nbsp;</button>" +
+                          <?php } ?>
                           "</td>" +
                         "</tr>"+
                         "<tr class='target-"+target.tempid+" tr-program' style='"+(html_program==""?"display:none":"")+"'>" +
@@ -553,9 +561,11 @@ $this->load->view('pages/_partials/header');
                           "<td>T" + t + "</td>" +
                           "<td>" + tujuan.nama + "</td>" +
                           "<td>" +
+                          <?php if($draft_data->status!=="Disetujui"){ ?>
                             "<button type='button' class='btn btn-sm btn-primary btn-add-target' title='Tambah Tujuan' onclick='openModalTarget("+misi[i].tempid+","+tujuan.tempid+");'>&nbsp;<i class='fa fa-plus'></i>&nbsp;</button>" +
                             "<button type='button' class='btn btn-sm btn-warning btn-edit-purpose' title='Edit' onclick='openModalTujuan("+misi[i].tempid+","+tujuan.tempid+");'>&nbsp;<i class='fa fa-edit'></i></button>" +
                             "<button type='button' class='btn btn-sm btn-danger btn-delete-purpose' title='Delete' onclick='deleteTujuan("+misi[i].tempid+","+tujuan.tempid+");'>&nbsp;<i class='fa fa-times'></i>&nbsp;</button>" +
+                          <?php } ?>
                           "</td>" +
                         "</tr>" +
                         "<tr class='tujuan-"+tujuan.tempid+" tr-target' style='"+(html_target==""?"display:none":"")+"'>" +
@@ -571,9 +581,11 @@ $this->load->view('pages/_partials/header');
                     "<td>M" + (i+1) + "</td>" +
                     "<td class='td-nama' data-tempid='"+misi[i].tempid+"'>" + (misi[i].nama) + "</td>" +
                     "<td>" +
+                    <?php if($draft_data->status!=="Disetujui"){ ?>
                       "<button type='button' class='btn btn-sm btn-primary btn-add-tujuan' title='Tambah Misi' onclick='openModalTujuan("+misi[i].tempid+");'>&nbsp;<i class='fa fa-plus'></i>&nbsp;</button>" +
                       "<button type='button' class='btn btn-sm btn-warning btn-edit-misi' title='Edit' onclick='openModalMisi("+misi[i].tempid+");'>&nbsp;<i class='fa fa-edit'></i></button>" +
                       "<button type='button' class='btn btn-sm btn-danger btn-delete-misi' title='Delete' onclick='deleteMisi("+misi[i].tempid+");'>&nbsp;<i class='fa fa-times'></i>&nbsp;</button>" +
+                    <?php } ?>
                     "</td>" +
                   "</tr>" +
                   "<tr class='misi-"+misi[i].tempid+" tr-tujuan' style='"+(html_tujuan==""?"display:none":"")+"'>" +

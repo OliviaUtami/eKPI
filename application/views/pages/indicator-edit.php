@@ -6,6 +6,9 @@ $this->load->view('pages/_partials/header');
   .date-input:read-only{
     background-color: #fdfdff;
   }
+  .btn-md {
+    height: 32px;
+  }
   .mySelect {
     height: 32px !important;
     font-size: 13px !important;
@@ -27,7 +30,17 @@ $this->load->view('pages/_partials/header');
   .modal-body .row{
     margin-bottom: 16px;
   }
+  #tableChoice{
+    max-width: 500px;
+    width: 100%;
+
+  }
 </style>
+<script>
+  var indikator = [];
+  var tempid = 1;
+
+</script>
 <div class="modal" id="modal-tambah-indikator" tabindex="-1" role="dialog">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
@@ -44,6 +57,7 @@ $this->load->view('pages/_partials/header');
             <label>Program</label>
           </div>
           <div class="col-md-9">
+          <input type="hidden" class="form-control" id="tempid"/>
           <input type="hidden" class="form-control" id="sasaran"/>
           <select class="form-control mySelect" id="program" autocomplete="off" required>
             <option></option>
@@ -92,12 +106,13 @@ $this->load->view('pages/_partials/header');
             <label>Pilihan</label> <button type='button' class='btn btn-sm btn-add-choice'>&nbsp;<i class='fa fa-plus'></i>&nbsp;</button>
           </div>
           <div class="col-md-9">
-            <table id="tableChoice" style="width: 500px; border: black 1px;">
+            <table id="tableChoice" class="table table-striped table-sm">
               <thead>
                 <tr>
                   <th>Pilihan</th>
                   <th style="width: 70px;">Nilai</th>
                   <th style="width: 20px;">Target</th>
+                  <th style="width: 20px;"></th>
                 </tr>
               </thead>
               <tbody>
@@ -154,12 +169,15 @@ $this->load->view('pages/_partials/header');
             </div>
             <?php 
                 $i = 1;
-                foreach($indicator->targets as $target){ ?>
+                foreach($indicator->targets as $target){ 
+                  echo "<script>indikator.push({target_id:".$target->id.",details:[]});</script>";
+            ?>
+
             <div class="row">
               <div class="form-group col-md-12">
                 <label>
                   <b>SASARAN STRATEGIS <?php echo $i." : ".$target->nama; ?></b>
-                  <button type='button' class='btn btn-sm btn-primary btn-add' data-target="<?php echo $target->id; ?>">&nbsp;<i class='fa fa-plus'></i>&nbsp;</button>
+                  <button type='button' class='btn btn-sm btn-primary' onclick="addIndikator(<?php echo $target->id; ?>);">&nbsp;<i class='fa fa-plus'></i>&nbsp;</button>
                 </label>
               </div>
               <div class="col-md-12">
@@ -170,11 +188,12 @@ $this->load->view('pages/_partials/header');
                       <th>INDIKATOR KINERJA PROGRAM</th>
                       <th>SASARAN</th>
                       <th>TARGET</th>
+                      <th style="width: 60px"></th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr>
-                        <td colspan="4" style="text-align:center">Tidak ada data</td>
+                        <td colspan="5" style="text-align:center">Tidak ada data</td>
                     </tr>
                   </tbody>
                 </table>
@@ -211,14 +230,12 @@ $this->load->view('pages/_partials/header');
     $("#rowCustomValue").hide();
   });
   
-  var indikator = [];
-  var tempid = 1;
-
-  $(document).on("click",".btn-add",function(){
+  function addIndikator(target_id, tempid=null){
+    resetModal();
     $.ajax({
         url: '<?php echo base_url(); ?>indicator/api/get_program',
         type: 'POST',
-        data: JSON.stringify({target_id: $(this).data("target")}),
+        data: JSON.stringify({target_id: target_id}),
         dataType : "json",
         contentType: "application/json; charset=utf-8",
         success: function(data) {
@@ -229,9 +246,34 @@ $this->load->view('pages/_partials/header');
             for(var i=0; i<program.length; i++){
               option += "<option data-kode='"+program[i].kode+"' value='"+program[i].id+"'>"+program[i].kode+" "+program[i].nama+"</option>";
             }
-            $("#program").html(option);
             $("#sasaran").val(data.id);
             $("#tableChoice tbody").html("");
+            $("#program").html(option);
+            if(tempid!==null){
+              var target = indikator.find(item=>item.target_id==target_id);
+              var indk = target.details.find(item=>item.tempid==tempid);
+
+              $("#tempid").val(tempid);
+              $("#program").val(indk.program_id).trigger("change");
+              $("#indikator").val(indk.indikator);
+              $("#tipe").val(indk.tipe).trigger("change");
+              $("#satuan").val(indk.satuan);
+              $("#target").val(indk.target);
+
+              var choices = indk.pilihan;
+              for(var c=0; c<choices.length; c++){
+                var html = "<tr>"+
+                              "<td><input type=\"text\" class=\"form-control pilihan-nama\" value=\""+choices[c].nama+"\"/> </td>"+
+                              "<td><input type=\"text\" class=\"form-control pilihan-nilai number\" value=\""+choices[c].nilai+"\"/></td>"+
+                              "<td style=\"text-align: center\"><button type=\"button\" class=\"btn btn-md btn-set btn-secondary\">Set</button></td>"+
+                              "<td style=\"text-align: center\">"+
+                                "<button type=\"button\" class=\"btn btn-md btn-delete-choice btn-danger\"><i class=\"fa fa-times\"></i></button>"+
+                              "</td>"+
+                            "</tr>";
+                $("#tableChoice tbody").append(html);
+              }
+            }
+            
             $("#modal-tambah-indikator").modal("show");
             //window.location.replace("/eKPI/draft");
           }else{
@@ -243,7 +285,7 @@ $this->load->view('pages/_partials/header');
         }
     });
     
-  });
+  };
 
   $(document).on("change","#tipe", function(){
     if($(this).val()=="Pilihan Kustom"){
@@ -260,13 +302,22 @@ $this->load->view('pages/_partials/header');
     var html = "<tr>"+
                   "<td><input type=\"text\" class=\"form-control pilihan-nama\" /> </td>"+
                   "<td><input type=\"text\" class=\"form-control pilihan-nilai number\" /></td>"+
-                  "<td style=\"text-align: center\"><button type=\"button\" class=\"btn btn-md btn-set btn-secondary\">Set</button></td>"+
+                  "<td style=\"text-align: center\">"+
+                    "<button type=\"button\" class=\"btn btn-md btn-set btn-secondary\">Set</button>"+
+                  "</td>"+
+                  "<td style=\"text-align: center\">"+
+                    "<button type=\"button\" class=\"btn btn-md btn-delete-choice btn-danger\"><i class=\"fa fa-times\"></i></button>"+
+                  "</td>"+
                 "</tr>";
     $("#tableChoice tbody").append(html);
   });
 
   $(document).on("click",".btn-set", function(){
     $("#target").val($(this).closest("tr").find(".pilihan-nama").first().val());
+  });
+
+  $(document).on("click",".btn-delete-choice", function(){
+    $(this).closest("tr").remove();
   });
   
   function saveIndikator(){
@@ -284,38 +335,115 @@ $this->load->view('pages/_partials/header');
       alert("Silahkan target dari indikator"); return;
     }
 
-    var temppilihan = [];
+    var temppilihan = []; var pilihanok = true;
     if($("#tipe").val()=="Pilihan Kustom"&&$(".pilihan-nama").length>0){
       $(".pilihan-nama").each(function(){
+        if($(this).closest("tr").find(".pilihan-nilai").first().val().trim()==""){
+          alert("Silahkan isi nilai angka dari pilihan kustom yang telah ditambahkan");
+          pilihanok = false;
+          return false; 
+        }
         temppilihan.push({
           nama: $(this).val().trim(),
           nilai: $(this).closest("tr").find(".pilihan-nilai").first().val().trim()
         });
       });
     }
-
-    var objInd = {
-      tempid: tempid,
-      program_id: $("#program").val(),
-      program_kode: $("#program option:selected").data("kode"),
-      target_id: $("#sasaran").val(),
-      indikator: $("#indikator").val().trim(),
-      satuan: $("#satuan").val().trim(),
-      target: $("#target").val().trim(),
-      tipe: $("#tipe").val(),
-      pilihan: temppilihan
-    };
-    indikator.push(objInd);
+    
+    if(!pilihanok)
+      return;
+    if($("#tempid").val()==""){
+      var objInd = {
+        tempid: tempid,
+        program_id: $("#program").val(),
+        program_kode: $("#program option:selected").data("kode"),
+        target_id: $("#sasaran").val(),
+        indikator: $("#indikator").val().trim(),
+        satuan: $("#satuan").val().trim(),
+        target: $("#target").val().trim(),
+        tipe: $("#tipe").val(),
+        pilihan: temppilihan
+      };
+      indikator.find(item=>item.target_id==parseInt($("#sasaran").val())).details.push(objInd);
+      tempid++;
+    }else{
+      var curTarget = indikator.find(item=>item.target_id==parseInt($("#sasaran").val()));
+      var curIndk = curTarget.details.find(item=>item.tempid==parseInt($("#tempid").val()));
+      curIndk.program_id= $("#program").val();
+      curIndk.program_kode= $("#program option:selected").data("kode");
+      curIndk.target_id= $("#sasaran").val();
+      curIndk.indikator= $("#indikator").val().trim();
+      curIndk.satuan= $("#satuan").val().trim();
+      curIndk.target= $("#target").val().trim();
+      curIndk.tipe= $("#tipe").val();
+      curIndk.pilihan= temppilihan;
+    }
+    reloadTable();
     resetModal();
     $("#modal-tambah-indikator").modal("hide");
   }
 
-  function reloadTable($target_id){
+  function reloadTable(target_id=""){
     var html = "";
-
+    if(target_id==""){//reload semua table
+      for(var i=0; i<indikator.length; i++){
+        var obj = indikator[i];var count = 1;var program_kode = "";
+        html = "";
+        obj.details.sort((a,b) => ( (a.program_kode+"."+a.tempid).localeCompare((b.program_kode+"."+b.tempid), 'en', { numeric: true })));
+        for(var x=0; x<obj.details.length; x++){
+          var row = obj.details[x];
+          if(program_kode!==row.program_kode)
+            count=1;
+          html += "<tr>" +
+                    "<td>IK"+row.program_kode+"."+count+"</td>" +
+                    "<td>"+row.indikator+"</td>" +
+                    "<td>"+row.satuan+"</td>" +
+                    "<td>"+row.target+"</td>" +
+                    "<td><button type=\"button\" class=\"btn btn-xs btn-secondary\" onclick=\"addIndikator("+row.target_id+","+row.tempid+")\"><i class=\"fa fa-edit\"></i></button></td>" +
+                  "</tr>";
+          program_kode = row.program_kode;
+          row.indikator_kode = "IK"+row.program_kode+"."+count;
+          count++;
+        }
+        if(html==""){
+          html += "<tr>"+
+                        "<td colspan=\"5\" style=\"text-align:center\">Tidak ada data</td>"+
+                  "</tr>";
+        }
+        $("#table-i-"+obj.target_id+" tbody").html(html);
+        console.log(html);
+      }
+    }else{//hanya reload yang target_id
+      var obj = indikator.find(item=>item.target_id==target_id+"");var count = 1;var program_kode = "";
+      html = "";
+      obj.details.sort((a,b) => ( (a.program_kode+"."+a.tempid).localeCompare((b.program_kode+"."+b.tempid), 'en', { numeric: true })));
+      for(var x=0; x<obj.details.length; x++){
+        var row = obj.details[x];
+        if(program_kode!==row.program_kode)
+          count=1;
+        html += "<tr>" +
+                  "<td>IK"+row.program_kode+"."+count+"</td>" +
+                  "<td>"+row.indikator+"</td>" +
+                  "<td>"+row.satuan+"</td>" +
+                  "<td>"+row.target+"</td>" +
+                  "<td><button type=\"button\" class=\"btn btn-xs btn-secondary\" onclick=\"addIndikator("+row.target_id+","+row.tempid+")\"><i class=\"fa fa-edit\"></i></button></td>" +
+                "</tr>";
+        program_kode = row.program_kode;
+        row.indikator_kode = "IK"+row.program_kode+"."+count;
+        count++;
+      }
+      if(html==""){
+        html += "<tr>"+
+                      "<td colspan=\"5\" style=\"text-align:center\">Tidak ada data</td>"+
+                "</tr>";
+      }
+      $("#table-i-"+obj.target_id+" tbody").html(html);
+      console.log(html);
+    }
   }
   
   function resetModal(){
+    $("#tempid").val("");
     $("#program").html("");
     $("#sasaran").val("");
     $("#indikator").val("");

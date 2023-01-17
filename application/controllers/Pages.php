@@ -32,6 +32,11 @@ class Pages extends CI_Controller {
 			redirect('/login', 'refresh');
 		}
 	}
+	private function check_login_api() {
+		if(!$this->session->has_userdata('username')){
+			return false;
+		}
+	}
 	/** PAGE ORG - START */
 	public function dashboard() {
 		$data = array(
@@ -332,7 +337,9 @@ class Pages extends CI_Controller {
 		$this->load->view('pages/draft-add', $data);
 	}
 	public function process_draft_add(){
-		$this->check_login();
+		if(!$this->check_login_api()){
+			return false;
+		}
 		$this->load->model('draft_model');
 		
 		$json = file_get_contents('php://input');
@@ -358,7 +365,9 @@ class Pages extends CI_Controller {
 		$this->load->view('pages/draft-edit', $data);
 	}
 	public function process_draft_edit(){
-		$this->check_login();
+		if(!$this->check_login_api()){
+			return false;
+		}
 		$this->load->model('draft_model');
 		
 		$json = file_get_contents('php://input');
@@ -409,7 +418,9 @@ class Pages extends CI_Controller {
 		$this->load->view('pages/appr-draft-edit', $data);
 	}
 	public function process_draft_approval_edit(){
-		$this->check_login();
+		if(!$this->check_login_api()){
+			return false;
+		}
 		$this->load->model('draft_model');
 		
 		$json = file_get_contents('php://input');
@@ -469,7 +480,9 @@ class Pages extends CI_Controller {
 	}
 	
 	public function get_program_by_target(){
-		$this->check_login();
+		if(!$this->check_login_api()){
+			return false;
+		}
 		$this->load->model('indicator_model');
 		
 		$json = file_get_contents('php://input');
@@ -478,6 +491,22 @@ class Pages extends CI_Controller {
 		
 		$data = $this->indicator_model->get_program_by_target($target_id);
 		echo json_encode($data);
+	}
+
+	public function process_indicator_add(){
+		if(!$this->check_login_api()){
+			return false;
+		}
+		$this->load->model('indicator_model');
+		
+		$json = file_get_contents('php://input');
+		$obj = json_decode($json);
+		$draft_name = $obj->name;
+		$missions = $obj->details;
+		$data = $this->draft_model->add_draft($draft_name, $missions);
+		echo json_encode($data);
+		//var_dump($test);
+		//exit();
 	}
 	/** PAGE INDICATOR - END */
 }
