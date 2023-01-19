@@ -37,6 +37,9 @@ table.dataTable thead .sorting::before, table.dataTable thead .sorting::after, t
     line-height: 20px;
     padding: 0rem 0.3rem;
     font-size: 12px;
+    min-width: 30px;
+    margin-left: 2px;
+    margin-right: 2px;
 }
 .fa, .fas {
     font-weight: 100;
