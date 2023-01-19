@@ -36,6 +36,7 @@ class Pages extends CI_Controller {
 		if(!$this->session->has_userdata('username')){
 			return false;
 		}
+		return true;
 	}
 	/** PAGE ORG - START */
 	public function dashboard() {
@@ -470,7 +471,7 @@ class Pages extends CI_Controller {
 		$this->load->model('indicator_model');
 		$user = $this->user_model->get_user_by_username($_SESSION["username"]);
 		$indicator = $this->indicator_model->get_indicator_by_draft_org($draft_id,$user->org_id);
-		//var_dump($periods);
+		//var_dump(json_encode($indicator));
 		$data = array(
 			"title" 		=> "Manajemen Indikator (".$user->org_name.")",
 			"menu"			=> "indicator",
@@ -501,11 +502,12 @@ class Pages extends CI_Controller {
 		
 		$json = file_get_contents('php://input');
 		$obj = json_decode($json);
-		$draft_name = $obj->name;
-		$missions = $obj->details;
-		$data = $this->draft_model->add_draft($draft_name, $missions);
-		echo json_encode($data);
-		//var_dump($test);
+		$this->load->model('user_model');
+		$user = $this->user_model->get_user_by_username($_SESSION["username"]);
+    
+		$data = $this->indicator_model->add_indicator($user,$obj);
+		
+		
 		//exit();
 	}
 	/** PAGE INDICATOR - END */

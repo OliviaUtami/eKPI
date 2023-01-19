@@ -28,6 +28,31 @@ class indicator_model extends CI_Model {
                 WHERE m.draft_id = ?
                 ORDER BY t.target_id ASC";
     $targets = $this->db->query($sqlTarget,array($draft_id))->result();
+    $tempid = 1;
+    foreach($targets as $target){
+      $sql   = "SELECT 
+                    d.ind_det_id, d.nama indikator, d.kode indikator_kode,
+                    d.program_id, p.code program_kode, d.satuan, d.target,
+                    p.target_id, d.tipe
+                FROM indicator_detail d
+                JOIN indicator h on d.indicator_id = h.indicator_id
+                JOIN program p on d.program_id = p.program_id
+                WHERE h.draft_id = ? and h.org_id = ? and p.target_id = ?
+                ORDER BY d.kode ASC";
+      $indikator = $this->db->query($sql,array($draft_id, $org_id, $target->id))->result();
+      foreach($indikator as $ind){
+        $ind->tempid = $tempid;
+        if($ind->tipe=="Pilihan Kustom"){
+          $sql   = "SELECT nama, nilai FROM indicator_custom_value WHERE ind_det_id = ? ORDER BY custval_id ASC";
+          $pilihan = $this->db->query($sql,array($ind->ind_det_id))->result();
+          $ind->pilihan = $pilihan;
+        }else{
+          $ind->pilihan = array();
+        }
+        $tempid++;
+      }
+      $target->indicators = $indikator;
+    }
     $data->targets = $targets;
     
     return $data;
@@ -152,6 +177,47 @@ class indicator_model extends CI_Model {
         }
       }
       $message = "Draft succesfully updated";
+    }
+    $data = (object) [
+			"ok"      => $ok,
+      "message" => $message
+    ];
+    return $data;
+  }
+
+  public function add_indicator($user,$reqdata){
+    $message = ""; $ok = 1;
+    $indikator = $reqdata->indikator;
+    $draft_id = $reqdata->draft_id;
+    $used = $this->db->query("SELECT count(1) cnt FROM indicator WHERE org_id = ? and draft_id = ?",array($user->org_id, $draft_id))->row();
+    if($used->cnt>0){//update
+      $message = "Indikator untuk periode KPI ini sudah ada, silahkan perbarui dari data yang sudah ada";
+    }else{
+      $sql = "INSERT INTO indicator 
+                (draft_id, org_id, created_by, status)
+              VALUES (?, ?, ?, ?)";
+      $this->db->query($sql, array($draft_id, $user->org_id, $user->username, "Draft"));
+      $indikator_id = $this->db->insert_id();
+      for($i=0;$i<count($indikator);$i++){
+        $det = $indikator[$i]->details;
+        for($j=0;$j<count($det);$j++){
+          $obj = $det[$j];
+          $sql = "INSERT INTO indicator_detail
+                    (indicator_id, program_id, kode, nama, satuan, target, tipe, created_by)
+                  VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+          $this->db->query($sql, array($indikator_id, $obj->program_id, $obj->indikator_kode, $obj->indikator, $obj->satuan, $obj->target, $obj->tipe, $user->username));
+          $ind_det_id = $this->db->insert_id();
+          if($obj->tipe=="Pilihan Kustom"){
+            for($k=0;$k<count($obj->pilihan);$k++){
+              $sql = "INSERT INTO indicator_custom_value
+                        (ind_det_id, nama, nilai)
+                      VALUES (?, ?, ?)";
+              $this->db->query($sql,array($ind_det_id, $obj->pilihan[$k]->nama, $obj->pilihan[$k]->nilai));
+            }
+          }
+        }
+      }
+      $message = "Indikator berhasil disimpan";
     }
     $data = (object) [
 			"ok"      => $ok,

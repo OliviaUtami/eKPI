@@ -170,7 +170,7 @@ $this->load->view('pages/_partials/header');
             <?php 
                 $i = 1;
                 foreach($indicator->targets as $target){ 
-                  echo "<script>indikator.push({target_id:".$target->id.",details:[]});</script>";
+                  echo "<script>indikator.push({target_id:".$target->id.",details:".json_encode($target->indicators)."}); tempid=tempid+".count($target->indicators).";</script>";
             ?>
 
             <div class="row">
@@ -239,6 +239,7 @@ $this->load->view('pages/_partials/header');
         dataType : "json",
         contentType: "application/json; charset=utf-8",
         success: function(data) {
+          console.log(data);
           if(data.ok==1){
             $(".modal-title").html("SASARAN STRATEGIS "+data.kode.substr(1)+" : "+data.nama);
             var program = data.program;
@@ -265,9 +266,9 @@ $this->load->view('pages/_partials/header');
                 var html = "<tr>"+
                               "<td><input type=\"text\" class=\"form-control pilihan-nama\" value=\""+choices[c].nama+"\"/> </td>"+
                               "<td><input type=\"text\" class=\"form-control pilihan-nilai number\" value=\""+choices[c].nilai+"\"/></td>"+
-                              "<td style=\"text-align: center\"><button type=\"button\" class=\"btn btn-md btn-set btn-secondary\">Set</button></td>"+
-                              "<td style=\"text-align: center\">"+
-                                "<button type=\"button\" class=\"btn btn-md btn-delete-choice btn-danger\"><i class=\"fa fa-times\"></i></button>"+
+                              "<td style=\"text-align: center; vertical-align: middle;\"><button type=\"button\" class=\"btn btn-sm btn-set btn-primary\">Set</button></td>"+
+                              "<td style=\"text-align: center; vertical-align: middle;\">"+
+                                "<button type=\"button\" class=\"btn btn-sm btn-delete-choice btn-danger\">&nbsp;<i class=\"fa fa-times\"></i>&nbsp;</button>"+
                               "</td>"+
                             "</tr>";
                 $("#tableChoice tbody").append(html);
@@ -302,11 +303,11 @@ $this->load->view('pages/_partials/header');
     var html = "<tr>"+
                   "<td><input type=\"text\" class=\"form-control pilihan-nama\" /> </td>"+
                   "<td><input type=\"text\" class=\"form-control pilihan-nilai number\" /></td>"+
-                  "<td style=\"text-align: center\">"+
-                    "<button type=\"button\" class=\"btn btn-md btn-set btn-secondary\">Set</button>"+
+                  "<td style=\"text-align: center; vertical-align: middle;\">"+
+                    "<button type=\"button\" class=\"btn btn-sm btn-set btn-secondary\">Set</button>"+
                   "</td>"+
-                  "<td style=\"text-align: center\">"+
-                    "<button type=\"button\" class=\"btn btn-md btn-delete-choice btn-danger\"><i class=\"fa fa-times\"></i></button>"+
+                  "<td style=\"text-align: center; vertical-align: middle;\">"+
+                    "<button type=\"button\" class=\"btn btn-sm btn-delete-choice btn-danger\">&nbsp;<i class=\"fa fa-times\"></i>&nbsp;</button>"+
                   "</td>"+
                 "</tr>";
     $("#tableChoice tbody").append(html);
@@ -355,6 +356,7 @@ $this->load->view('pages/_partials/header');
     if($("#tempid").val()==""){
       var objInd = {
         tempid: tempid,
+        ind_det_id: -1,
         program_id: $("#program").val(),
         program_kode: $("#program option:selected").data("kode"),
         target_id: $("#sasaran").val(),
@@ -399,7 +401,7 @@ $this->load->view('pages/_partials/header');
                     "<td>"+row.indikator+"</td>" +
                     "<td>"+row.satuan+"</td>" +
                     "<td>"+row.target+"</td>" +
-                    "<td><button type=\"button\" class=\"btn btn-xs btn-secondary\" onclick=\"addIndikator("+row.target_id+","+row.tempid+")\"><i class=\"fa fa-edit\"></i></button></td>" +
+                    "<td><button type=\"button\" class=\"btn btn-sm btn-primary\" onclick=\"addIndikator("+row.target_id+","+row.tempid+")\"><i class=\"fa fa-edit\"></i></button></td>" +
                   "</tr>";
           program_kode = row.program_kode;
           row.indikator_kode = "IK"+row.program_kode+"."+count;
@@ -426,7 +428,7 @@ $this->load->view('pages/_partials/header');
                   "<td>"+row.indikator+"</td>" +
                   "<td>"+row.satuan+"</td>" +
                   "<td>"+row.target+"</td>" +
-                  "<td><button type=\"button\" class=\"btn btn-xs btn-secondary\" onclick=\"addIndikator("+row.target_id+","+row.tempid+")\"><i class=\"fa fa-edit\"></i></button></td>" +
+                  "<td><button type=\"button\" class=\"btn btn-xs btn-primary\" onclick=\"addIndikator("+row.target_id+","+row.tempid+")\"><i class=\"fa fa-edit\"></i></button></td>" +
                 "</tr>";
         program_kode = row.program_kode;
         row.indikator_kode = "IK"+row.program_kode+"."+count;
@@ -449,7 +451,7 @@ $this->load->view('pages/_partials/header');
     $("#indikator").val("");
     $("#satuan").val("");
     $("#target").val("");
-    $("#tipe").val("");
+    $("#tipe").val("Angka").trigger("change");
     $("#tableChoice tbody").html("");
   }
 
@@ -460,4 +462,23 @@ $this->load->view('pages/_partials/header');
       this.value = this.value.replace(/\D/g, '');
     }
   });
+
+  $(document).on("click","#btn-save",function(){
+    $.ajax({
+        url: '<?php echo base_url(); ?>indicator/api/save_indicator',
+        type: 'POST',
+        data: JSON.stringify({draft_id:$("#id").val(),indikator: indikator}),
+        dataType : "json",
+        contentType: "application/json; charset=utf-8",
+        success: function(data) {
+          console.log(data);
+          
+        },
+        error: function(data) {
+            console.log(data);
+        }
+    });
+  });
+
+  reloadTable();
 </script>
