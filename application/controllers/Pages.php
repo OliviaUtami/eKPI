@@ -450,7 +450,6 @@ class Pages extends CI_Controller {
 	/** PAGE INDICATOR - START */
 	public function view_indicator_list() {
 		$this->check_login();
-		$this->check_login();
 		$this->load->model('user_model');
 		$this->load->model('indicator_model');
 		$user = $this->user_model->get_user_by_username($_SESSION["username"]);
@@ -506,9 +505,37 @@ class Pages extends CI_Controller {
 		$user = $this->user_model->get_user_by_username($_SESSION["username"]);
     
 		$data = $this->indicator_model->add_indicator($user,$obj);
-		
-		
+		//$this->session->set_flashdata('message', $data->message);
+		echo json_encode($data);
 		//exit();
 	}
+
+	public function publish_indicator($id){
+		$this->check_login();
+		$this->load->model('indicator_model');
+		
+		$data = $this->indicator_model->publish_indicator($id);
+		$this->session->set_flashdata('message', $data->message);
+		//var_dump($data);
+		redirect('/indicator');
+	}
 	/** PAGE INDICATOR - END */
+
+	/** PAGE KPI - START */
+	public function view_kpi_list() {
+		$this->check_login();
+		$this->load->model('user_model');
+		$this->load->model('kpi_model');
+		$user = $this->user_model->get_user_by_username($_SESSION["username"]);
+		//var_dump($user);
+		$kpi = $this->kpi_model->get_my_kpi($user->user_id);
+		//var_dump($periods);
+		$data = array(
+			"title" 		=> "KPI Saya",
+			"menu"			=> "kpi",
+			"kpi"			=> $kpi
+		);
+		$this->load->view('pages/kpi-view', $data);
+	}
+	/** PAGE KPI - END */
 }

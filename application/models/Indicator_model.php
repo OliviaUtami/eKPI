@@ -5,9 +5,9 @@ class indicator_model extends CI_Model {
               p.period_id, DATE_FORMAT(period_from, '%d/%m/%Y') period_from, DATE_FORMAT(period_to, '%d/%m/%Y') period_to, 
               p.draft_id, i.indicator_id, i.org_id, coalesce(i.status,'Belum Ada') status, i.created_by, DATE_FORMAT(i.created_at, '%d/%m/%Y %H:%i:%s') created_at
             FROM period p 
-            LEFT JOIN indicator i ON p.draft_id = i.draft_id
-            WHERE DATE(SYSDATE()) BETWEEN p.period_from AND p.period_to AND p.status = 'Aktif'";
-    $data = $this->db->query($sql)->result();
+            LEFT JOIN indicator i ON p.draft_id = i.draft_id and i.org_id = ?
+            WHERE DATE(SYSDATE()) BETWEEN p.period_from AND p.period_to AND p.status = 'Aktif' ";
+    $data = $this->db->query($sql, array($org_id))->result();
     return $data;
   }
   public function get_indicator_by_draft_org($draft_id, $org_id){
@@ -43,7 +43,7 @@ class indicator_model extends CI_Model {
       foreach($indikator as $ind){
         $ind->tempid = $tempid;
         if($ind->tipe=="Pilihan Kustom"){
-          $sql   = "SELECT nama, nilai FROM indicator_custom_value WHERE ind_det_id = ? ORDER BY custval_id ASC";
+          $sql   = "SELECT custval_id, nama, nilai FROM indicator_custom_value WHERE ind_det_id = ? ORDER BY custval_id ASC";
           $pilihan = $this->db->query($sql,array($ind->ind_det_id))->result();
           $ind->pilihan = $pilihan;
         }else{
@@ -191,7 +191,84 @@ class indicator_model extends CI_Model {
     $draft_id = $reqdata->draft_id;
     $used = $this->db->query("SELECT count(1) cnt FROM indicator WHERE org_id = ? and draft_id = ?",array($user->org_id, $draft_id))->row();
     if($used->cnt>0){//update
-      $message = "Indikator untuk periode KPI ini sudah ada, silahkan perbarui dari data yang sudah ada";
+      $existing = $this->db->query("SELECT indicator_id FROM indicator WHERE org_id = ? and draft_id = ?",array($user->org_id, $draft_id))->row();
+      $indikator_id = $existing->indicator_id;
+      $sql = "UPDATE indicator 
+              SET 
+                status = ?,
+                updated_by = ?,
+                updated_at = NOW()
+              WHERE org_id = ? AND draft_id = ?";
+      $this->db->query($sql, array("Draft", $user->username, $user->org_id, $draft_id));
+      $this->db->query("UPDATE indicator_detail
+                        SET
+                          edit = 1
+                        WHERE indicator_id = ? ",array($indikator_id));
+      for($i=0;$i<count($indikator);$i++){
+        $det = $indikator[$i]->details;
+        for($j=0;$j<count($det);$j++){
+          $obj = $det[$j];
+          $ind_det_id = (int) $obj->ind_det_id;
+          if($ind_det_id==-1){
+            $sql = "INSERT INTO indicator_detail
+                      (indicator_id, program_id, kode, nama, satuan, target, tipe, created_by)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+            $this->db->query($sql, array($indikator_id, $obj->program_id, $obj->indikator_kode, $obj->indikator, $obj->satuan, $obj->target, $obj->tipe, $user->username));
+            $ind_det_id = $this->db->insert_id();
+            if($obj->tipe=="Pilihan Kustom"){
+              for($k=0;$k<count($obj->pilihan);$k++){
+                $sql = "INSERT INTO indicator_custom_value
+                          (ind_det_id, nama, nilai)
+                        VALUES (?, ?, ?)";
+                $this->db->query($sql,array($ind_det_id, $obj->pilihan[$k]->nama, $obj->pilihan[$k]->nilai));
+              }
+            }
+          }else{
+            $sql = "UPDATE indicator_detail
+                    SET
+                      program_id = ?, 
+                      kode = ?, 
+                      nama = ?, 
+                      satuan = ?, 
+                      target = ?, 
+                      tipe = ?, 
+                      updated_by = ?,
+                      updated_at = NOW(),
+                      edit = 0
+                    WHERE ind_det_id = ? ";
+            $this->db->query($sql, array($obj->program_id, $obj->indikator_kode, $obj->indikator, $obj->satuan, $obj->target, $obj->tipe, $user->username, $ind_det_id));
+            if($obj->tipe=="Pilihan Kustom"){
+              $sql = "UPDATE indicator_custom_value
+                      SET 
+                        edit = 1
+                      WHERE ind_det_id = ?";
+              $this->db->query($sql,array($ind_det_id));
+              $this->db->query("DELETE FROM indicator_custom_value WHERE ind_det_id = ? and edit = 1", array($ind_det_id));
+              for($k=0;$k<count($obj->pilihan);$k++){
+                if((int) $obj->pilihan[$k]->custval_id ==-1){
+                  $sql = "INSERT INTO indicator_custom_value
+                            (ind_det_id, nama, nilai)
+                          VALUES (?, ?, ?)";
+                  $this->db->query($sql,array($ind_det_id, $obj->pilihan[$k]->nama, $obj->pilihan[$k]->nilai));
+                }else{
+                  $sql = "UPDATE indicator_custom_value
+                          SET 
+                            nama = ?, 
+                            nilai = ?
+                          WHERE custval_id = ?";
+                  $this->db->query($sql,array($$obj->pilihan[$k]->nama, $obj->pilihan[$k]->nilai, $obj->pilihan[$k]->custval_id));
+                }
+              }
+            }else{
+              $sql = "DELETE FROM indicator_custom_value
+                        WHERE ind_det_id = ?";
+              $this->db->query($sql,array($ind_det_id));
+            }
+          }
+        }
+      }  
+      $this->db->query("DELETE FROM indicator_detail WHERE indicator_id = ? and edit = 1", array($indikator_id));  
+      $message = "Indikator berhasil disimpan";
     }else{
       $sql = "INSERT INTO indicator 
                 (draft_id, org_id, created_by, status)
@@ -218,6 +295,27 @@ class indicator_model extends CI_Model {
         }
       }
       $message = "Indikator berhasil disimpan";
+    }
+    $data = (object) [
+			"ok"      => $ok,
+      "message" => $message
+    ];
+    return $data;
+  }
+
+  public function publish_indicator($indicator_id){
+    $message = ""; $ok = 1;
+    $res = $this->db->query("SELECT status FROM indicator WHERE indicator_id = ?",array($indicator_id))->row();
+    if($res->status=="Draft"){
+      $sql = "UPDATE indicator 
+                SET
+                  updated_by = ?,
+                  updated_at = now(),
+                  status = ?
+              WHERE indicator_id = ?";
+      $this->db->query($sql, array($_SESSION["username"], "Dipublikasi", $indicator_id));
+    }else{
+      $message = "Gagal dipublikasi. Status Indikator Program ".$res->status."";
     }
     $data = (object) [
 			"ok"      => $ok,

@@ -145,7 +145,9 @@ $this->load->view('pages/_partials/header');
         </div>
       </div>
       <div class="modal-footer">
+        <?php if($indicator->status!=="Dipublikasi"){ ?>
         <button type="button" class="btn btn-primary" onclick="saveIndikator()">Simpan</button>
+        <?php } ?>
       </div>
     </div>
   </div>
@@ -177,7 +179,9 @@ $this->load->view('pages/_partials/header');
               <div class="form-group col-md-12">
                 <label>
                   <b>SASARAN STRATEGIS <?php echo $i." : ".$target->nama; ?></b>
+                  <?php if($indicator->status!=="Dipublikasi"){ ?>
                   <button type='button' class='btn btn-sm btn-primary' onclick="addIndikator(<?php echo $target->id; ?>);">&nbsp;<i class='fa fa-plus'></i>&nbsp;</button>
+                  <?php } ?>
                 </label>
               </div>
               <div class="col-md-12">
@@ -203,7 +207,9 @@ $this->load->view('pages/_partials/header');
             <?php $i++; } ?>
           </div>
           <div class="card-footer bg-whitesmoke">
+            <?php if($indicator->status!=="Dipublikasi"){ ?>
             <button type="button" id="btn-save" class="btn btn-primary">Simpan</button>
+            <?php }?>
           </div>
         </div>
       </form>
@@ -288,6 +294,15 @@ $this->load->view('pages/_partials/header');
     
   };
 
+  function deleteIndikator(target_id, tempid){
+    if(confirm("Hapus indikator kinerja program ini ?")){
+      var target = indikator.find(item=>item.target_id==target_id);
+      var idx = target.details.findIndex(item=>item.tempid==tempid);
+      if(idx>-1)
+        target.details.splice(idx,1);
+      reloadTable();
+    }
+  }
   $(document).on("change","#tipe", function(){
     if($(this).val()=="Pilihan Kustom"){
       $("#rowCustomValue").show();
@@ -304,7 +319,7 @@ $this->load->view('pages/_partials/header');
                   "<td><input type=\"text\" class=\"form-control pilihan-nama\" /> </td>"+
                   "<td><input type=\"text\" class=\"form-control pilihan-nilai number\" /></td>"+
                   "<td style=\"text-align: center; vertical-align: middle;\">"+
-                    "<button type=\"button\" class=\"btn btn-sm btn-set btn-secondary\">Set</button>"+
+                    "<button type=\"button\" class=\"btn btn-sm btn-set btn-primary\">Set</button>"+
                   "</td>"+
                   "<td style=\"text-align: center; vertical-align: middle;\">"+
                     "<button type=\"button\" class=\"btn btn-sm btn-delete-choice btn-danger\">&nbsp;<i class=\"fa fa-times\"></i>&nbsp;</button>"+
@@ -345,10 +360,18 @@ $this->load->view('pages/_partials/header');
           return false; 
         }
         temppilihan.push({
+          custval_id: -1,
           nama: $(this).val().trim(),
           nilai: $(this).closest("tr").find(".pilihan-nilai").first().val().trim()
         });
       });
+    }
+    if($("#tipe").val()=="Pilihan Kustom"){
+      var indexTarget = temppilihan.findIndex(item=>item.nama==$("#target").val().trim());
+      if(indexTarget==-1){
+        alert("Target yand diset tidak sesuai dengan pilihan kustom yang ada, silahkan set target dari pilihan yang sudah ditambahkan");
+        return; 
+      }
     }
     
     if(!pilihanok)
@@ -401,7 +424,12 @@ $this->load->view('pages/_partials/header');
                     "<td>"+row.indikator+"</td>" +
                     "<td>"+row.satuan+"</td>" +
                     "<td>"+row.target+"</td>" +
-                    "<td><button type=\"button\" class=\"btn btn-sm btn-primary\" onclick=\"addIndikator("+row.target_id+","+row.tempid+")\"><i class=\"fa fa-edit\"></i></button></td>" +
+                    "<td>"+
+                      <?php if($indicator->status!=="Dipublikasi"){ ?>
+                      "<button type=\"button\" class=\"btn btn-sm btn-primary\" onclick=\"addIndikator("+row.target_id+","+row.tempid+")\"><i class=\"fa fa-edit\"></i></button>" +
+                      "<button type=\"button\" class=\"btn btn-sm btn-danger\" onclick=\"deleteIndikator("+row.target_id+","+row.tempid+")\"><i class=\"fa fa-times\"></i></button>" +
+                      <?php } ?>
+                    "</td>" +
                   "</tr>";
           program_kode = row.program_kode;
           row.indikator_kode = "IK"+row.program_kode+"."+count;
@@ -428,7 +456,10 @@ $this->load->view('pages/_partials/header');
                   "<td>"+row.indikator+"</td>" +
                   "<td>"+row.satuan+"</td>" +
                   "<td>"+row.target+"</td>" +
-                  "<td><button type=\"button\" class=\"btn btn-xs btn-primary\" onclick=\"addIndikator("+row.target_id+","+row.tempid+")\"><i class=\"fa fa-edit\"></i></button></td>" +
+                  "<td>" +
+                    "<button type=\"button\" class=\"btn btn-sm btn-primary\" onclick=\"addIndikator("+row.target_id+","+row.tempid+")\"><i class=\"fa fa-edit\"></i></button>" +
+                    "<button type=\"button\" class=\"btn btn-sm btn-danger\" onclick=\"deleteIndikator("+row.target_id+","+row.tempid+")\"><i class=\"fa fa-times\"></i></button>" +
+                  "</td>" +
                 "</tr>";
         program_kode = row.program_kode;
         row.indikator_kode = "IK"+row.program_kode+"."+count;
@@ -472,7 +503,10 @@ $this->load->view('pages/_partials/header');
         contentType: "application/json; charset=utf-8",
         success: function(data) {
           console.log(data);
-          
+          alert(data.message);
+          if(data.ok==1){
+            location.reload();
+          }
         },
         error: function(data) {
             console.log(data);

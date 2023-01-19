@@ -96,5 +96,9 @@ $route['indicator/delete/(:num)'] = 'pages/process_indicator_delete/$1';
 //indicator
 $route['indicator'] = 'pages/view_indicator_list';
 $route['indicator/edit/(:num)'] = 'pages/view_indicator_edit/$1';
+$route['indicator/publish/(:num)'] = 'pages/publish_indicator/$1';
 $route['indicator/api/get_program']['post'] = 'pages/get_program_by_target';
 $route['indicator/api/save_indicator']['post'] = 'pages/process_indicator_add';
+
+//kpi
+$route['kpi'] = 'pages/view_kpi_list';

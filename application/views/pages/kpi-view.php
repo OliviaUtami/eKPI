@@ -17,27 +17,24 @@ $this->load->view('pages/_partials/header');
                 <tr>
                     <th>No</th>
                     <th>Periode Pengisian</th>
+                    <th>Organisasi</th>
                     <th>Status</th>
                     <th>Dibuat Oleh</th>
                     <th>Tindakan</th>
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($periods as $data){ ?>
+                <?php foreach ($kpi as $data){ ?>
                     <tr>
                         <td></td>
                         <td><?php echo($data->period_from." - ".$data->period_to); ?></td>
+                        <td><?php echo($data->org_name); ?></td>
                         <td><?php echo($data->status); ?></td>
                         <td><?php echo($data->created_by."<br/>".$data->created_at); ?></td>
                         <td>
-                            <?php if($data->status=="Belum Ada"&&$data->status=="Draft"){ ?>
                             <button class="btn btn-sm btn-warning" onclick="manageIndicators(<?php echo $data->draft_id; ?>)" title="Indikator KPI"><i class="fa fa-edit"></i></button>
-                            <?php } ?>
                             <?php if($data->indicator_id!==NULL&&$data->status=="Draft"){ ?>
                             <button class="btn btn-sm btn-primary" onclick="publish(<?php echo $data->indicator_id; ?>)" title="Publikasi Indikator"><i class="fa fa-paper-plane"></i></button>
-                            <?php } ?>
-                            <?php if($data->status=="Dipublikasi"){ ?>
-                            <button class="btn btn-sm btn-primary" onclick="manageIndicators(<?php echo $data->draft_id; ?>)" title="Indikator KPI"><i class="fa fa-eye"></i></button>
                             <?php } ?>
                         </td>
                     </tr>
@@ -88,7 +85,6 @@ $this->load->view('pages/_partials/header');
     }
 
     function publish(indicator_id){
-      if(confirm("Publikasi indikator program agar bisa digunakan tim dalam pengisian KPI ?"))
-        window.location.replace("indicator/publish/"+indicator_id);
+      
     }
 </script>
