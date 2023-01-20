@@ -178,7 +178,7 @@ $this->load->view('pages/_partials/header');
             <div class="row">
               <div class="form-group col-md-12">
                 <label>
-                  <b>SASARAN STRATEGIS <?php echo $i." : ".$target->nama; ?></b>
+                  <b>SASARAN STRATEGIS <?php echo substr($target->code,1)." : ".$target->nama; ?></b>
                   <?php if($indicator->status!=="Dipublikasi"){ ?>
                   <button type='button' class='btn btn-sm btn-primary' onclick="addIndikator(<?php echo $target->id; ?>);">&nbsp;<i class='fa fa-plus'></i>&nbsp;</button>
                   <?php } ?>
@@ -190,7 +190,7 @@ $this->load->view('pages/_partials/header');
                     <tr>
                       <th>KODE</th>
                       <th>INDIKATOR KINERJA PROGRAM</th>
-                      <th>SASARAN</th>
+                      <th>SATUAN</th>
                       <th>TARGET</th>
                       <th style="width: 60px"></th>
                     </tr>

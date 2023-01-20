@@ -6,6 +6,9 @@
  */
 
 /*# sourceMappingURL=custom.css.map */
+.center{
+    text-align: center;
+}
 .main-sidebar .sidebar-menu li a span {
     margin-top: 3px;
     width: 100%;
@@ -48,6 +51,18 @@ table.dataTable thead .sorting::before, table.dataTable thead .sorting::after, t
     height: 30px;
     padding: 4px;
 }
+.table.table-md th, .table.table-md td{
+    padding: 10px 15px;
+    line-height: 18px;
+}
 .btn-group > .btn.btn-sm{
     width: 24px !important;
+}
+.select2-results__option{
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 4px;
+    font-size: 13px;
+    height: auto;
+    line-height: 20px;
 }

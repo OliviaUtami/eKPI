@@ -32,7 +32,7 @@ $this->load->view('pages/_partials/header');
                         <td><?php echo($data->status); ?></td>
                         <td><?php echo($data->created_by."<br/>".$data->created_at); ?></td>
                         <td>
-                            <button class="btn btn-sm btn-warning" onclick="manageIndicators(<?php echo $data->draft_id; ?>)" title="Indikator KPI"><i class="fa fa-edit"></i></button>
+                            <button class="btn btn-sm btn-warning" onclick="openKPI(<?php echo $data->indicator_id; ?>)" title="Isi KPI"><i class="fa fa-edit"></i></button>
                             <?php if($data->indicator_id!==NULL&&$data->status=="Draft"){ ?>
                             <button class="btn btn-sm btn-primary" onclick="publish(<?php echo $data->indicator_id; ?>)" title="Publikasi Indikator"><i class="fa fa-paper-plane"></i></button>
                             <?php } ?>
@@ -80,8 +80,8 @@ $this->load->view('pages/_partials/header');
         <?php } ?>
     });
 
-    function manageIndicators(draft_id){
-      window.location.replace("indicator/edit/"+draft_id);
+    function openKPI(draft_id){
+      window.location.replace("kpi/edit/"+draft_id);
     }
 
     function publish(indicator_id){

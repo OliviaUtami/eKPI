@@ -35,5 +35,66 @@ class kpi_model extends CI_Model {
     return $data;
   }
 
-  
+  public function get_kpi_indicator($indicator_id, $user){
+    $sql = "SELECT 
+              p.period_id, DATE_FORMAT(period_from, '%d/%m/%Y') period_from, DATE_FORMAT(period_to, '%d/%m/%Y') period_to, 
+              p.draft_id, i.indicator_id, i.org_id, coalesce(iu.status,'Belum Ada') status, 
+              iu.created_by, DATE_FORMAT(iu.created_at, '%d/%m/%Y %H:%i:%s') created_at
+            FROM indicator i
+            JOIN period p on p.draft_id = i.draft_id
+            LEFT JOIN indicator_user iu ON i.indicator_id = iu.indicator_id AND iu.user_id = ?
+            WHERE i.indicator_id = ? and i.status = 'Dipublikasi' ";
+    $data = $this->db->query($sql,array($user->user_id, $indicator_id))->row();
+
+    $sql = "SELECT 
+                t.target_id, t.code kode_sasaran, t.name nama_sasaran, 
+                h.indicator_id, 
+                d.ind_det_id, d.kode kode_indikator, d.nama nama_indikator, d.target target_indikator, d.tipe tipe_indikator, 
+                uh.ind_user_id, ud.ind_user_det_id, ud.realisasi, ud.nilai
+            FROM indicator h
+            JOIN indicator_detail d ON h.indicator_id = d.indicator_id
+            JOIN program p ON d.program_id = p.program_id
+            JOIN target t ON t.target_id = p.target_id
+            LEFT JOIN (indicator_user_detail ud 
+              JOIN indicator_user uh on ud.ind_user_id = uh.ind_user_id )
+              ON d.ind_det_id = ud.ind_det_id and uh.user_id = ?
+            WHERE h.status = 'Dipublikasi' AND h.org_id = ? AND h.indicator_id = ?
+            ORDER BY d.kode ASC ";
+    $data->details = $this->db->query($sql, array($user->user_id,$user->org_id,$indicator_id))->result();
+    return $data;
+  }
+
+
+  public function get_indicator($indicator_id){
+    $data = new stdClass();
+    $sql = "SELECT 
+                t.target_id, t.code kode_sasaran, t.name nama_sasaran, 
+                h.indicator_id, 
+                d.ind_det_id id, CONCAT(d.kode,' - ',d.nama) text,
+                d.ind_det_id, d.kode kode_indikator, d.nama nama_indikator, d.satuan satuan_indikator, 
+                d.target target_indikator, d.tipe tipe_indikator
+            FROM indicator h
+            JOIN indicator_detail d ON h.indicator_id = d.indicator_id
+            JOIN program p ON d.program_id = p.program_id
+            JOIN target t ON t.target_id = p.target_id
+            WHERE h.status = 'Dipublikasi' AND h.indicator_id = ?
+            ORDER BY d.kode ASC ";
+    $indicator = $this->db->query($sql,array($indicator_id))->result();
+    foreach($indicator as $ind){
+      if($ind->tipe_indikator=="Pilihan Kustom"){
+        $sql   = "SELECT custval_id, nama, nilai FROM indicator_custom_value WHERE ind_det_id = ? ORDER BY custval_id ASC";
+        $pilihan = $this->db->query($sql,array($ind->ind_det_id))->result();
+        $ind->pilihan = $pilihan;
+        $sql   = "SELECT nilai FROM indicator_custom_value WHERE ind_det_id = ? AND nama = ?";
+        $pilihan = $this->db->query($sql,array($ind->ind_det_id, $ind->target_indikator))->row();
+        $ind->target_indikator_val = $pilihan->nilai;
+      }else{
+        $ind->pilihan = array();
+        $ind->target_indikator_val = $ind->target_indikator;
+      }
+    }
+    $data->ok = 1;
+    $data->indicator = $indicator;
+    return $data;
+  }
 }

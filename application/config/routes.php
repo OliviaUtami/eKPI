@@ -102,3 +102,5 @@ $route['indicator/api/save_indicator']['post'] = 'pages/process_indicator_add';
 
 //kpi
 $route['kpi'] = 'pages/view_kpi_list';
+$route['kpi/edit/(:num)'] = 'pages/view_kpi_edit/$1';
+$route['kpi/api/get_indicator']['post'] = 'pages/get_indicator';

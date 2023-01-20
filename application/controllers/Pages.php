@@ -537,5 +537,34 @@ class Pages extends CI_Controller {
 		);
 		$this->load->view('pages/kpi-view', $data);
 	}
+
+	public function view_kpi_edit($indicator_id) {
+		$this->check_login();
+		$this->load->model('user_model');
+		$this->load->model('kpi_model');
+		$user = $this->user_model->get_user_by_username($_SESSION["username"]);
+		$indicator = $this->kpi_model->get_kpi_indicator($indicator_id,$user);
+		//var_dump(json_encode($indicator));
+		$data = array(
+			"title" 		=> "KPI Saya",
+			"menu"			=> "kpi",
+			"indicator"		=> $indicator
+		);
+		$this->load->view('pages/kpi-edit', $data);
+	}
+
+	public function get_indicator(){
+		if(!$this->check_login_api()){
+			return false;
+		}
+		$this->load->model('kpi_model');
+		
+		$json = file_get_contents('php://input');
+		$obj = json_decode($json);
+		$indicator_id = $obj->indicator_id;
+		
+		$data = $this->kpi_model->get_indicator($indicator_id);
+		echo json_encode($data);
+	}
 	/** PAGE KPI - END */
 }
