@@ -253,6 +253,10 @@ $this->load->view('pages/_partials/header');
       alert("Silahkan pilih indikator yang ingin ditambahkan");
       return;
     }
+    if(indikator.findIndex(item=>item.ind_det_id==$("#cboIndicator").select2("data")[0].ind_det_id)>-1){
+      alert("Indikator sudah pernah ditambahkan sebelumnya, silahkan isi nilai realisasi dan upload dokumen yang dibutuhkan");
+      return;
+    }
     var selected = $("#cboIndicator").select2("data")[0];
     var obj = {
       ind_det_user_id: -1,
@@ -314,13 +318,13 @@ $this->load->view('pages/_partials/header');
           nilai = Math.round(parseInt(obj.realisasi)/parseInt(obj.target_indikator_value)*100*100)/100;
         }
       }else{
-        htmlInp += `<select class="form-control inpReal smallSelect" data-detid="${obj.id}">`;
+        htmlInp += `<select class="form-control inpReal smallSelect" data-detid="${obj.ind_det_id}">`;
         for(var j=0; j<obj.pilihan.length; j++){
-          htmlInp += `<option value="${obj.pilihan[j].nilai}" ${(obj.pilihan[j].nama==obj.target_indikator?"selected":"")}>${obj.pilihan[j].nama}</option>`;
+          htmlInp += `<option value="${obj.pilihan[j].nilai}" ${(obj.pilihan[j].nilai==obj.realisasi?"selected":"")}>${obj.pilihan[j].nama}</option>`;
         }
         htmlInp += `</select>`;
-        if(obj.tipe_indikator=="Angka"&&obj.realisasi!==null){
-          nilai = Math.round(parseInt(obj.target_indikator_value)/parseInt(obj.target_indikator_value)*100*100)/100;
+        if(obj.realisasi!==null){
+          nilai = parseInt(obj.realisasi);
         }
       }
       html += `<tr>
