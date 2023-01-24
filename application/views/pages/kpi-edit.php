@@ -270,7 +270,8 @@ $this->load->view('pages/_partials/header');
       target_indikator_value: selected.target_indikator_val,
       tipe_indikator: selected.tipe_indikator,
       pilihan: selected.pilihan,
-      realisasi: null
+      realisasi: null,
+      dokumen: []
     }
     indikator.push(obj);
     reloadTable();
@@ -280,10 +281,11 @@ $this->load->view('pages/_partials/header');
     var html = "";
     var prev_sasaran = "";
     indikator.sort((a,b) => ( (a.kode_indikator).localeCompare((b.kode_indikator), 'en', { numeric: true })));
-        
+    var totalpersasaran = 0, count = 0, grandtotal = 0, countsasaran = 0;    
     for(var i=0; i<indikator.length; i++){
       var obj = indikator[i];
       if(prev_sasaran!==obj.kode_sasaran){
+        
         html += `<div class="row">
                     <div class="form-group col-md-12">
                       <label>
@@ -327,6 +329,7 @@ $this->load->view('pages/_partials/header');
           nilai = parseInt(obj.realisasi);
         }
       }
+      totalpersasaran+=nilai; count++;
       html += `<tr>
                   <td>${obj.kode_indikator}</td>
                   <td>${obj.nama_indikator}</td>
@@ -334,15 +337,31 @@ $this->load->view('pages/_partials/header');
                   <td>${htmlInp}</td>
                   <td class="center">${obj.target_indikator}</td>
                   <td class="center"><span class="spanNilai">${nilai}</span></td>
-                  <td></td>
-                  <td></td>
+                  <td><span>0</span><button type="button" data-detid="${obj.ind_det_id}" class="btn btn-icon btn-sm btn-secondary btn-document" style="float: right" onclick="return false;"><i class="fa fa-search"></i></button></td>
+                  <td><button type="button" data-detid="${obj.ind_det_id}" class="btn btn-icon btn-sm btn-danger btn-remove-indicator"><i class="fa fa-times"></i></button></td>
                </tr>`;
-      if(i==indikator.length-1||indikator[i+1].kode_sasaran!==obj.kode_sasaran){          
-        html+=          `</tbody>
+      if(i==indikator.length-1||indikator[i+1].kode_sasaran!==obj.kode_sasaran){  
+        countsasaran++;
+        grandtotal+=Math.round(totalpersasaran/count*100)/100;
+           
+        html += `<tr style="background-color: aliceblue;">
+                  <td colspan="5" style="text-align: right">JUMLAH</td>
+                  <td class="center"><span class="spanNilai">${Math.round(totalpersasaran/count*100)/100}</span></td>
+                  <td  colspan="2"></td>
+               </tr>`;     
+        if(i==indikator.length-1){
+          html += `<tr style="background-color: lightgrey;">
+                      <td colspan="5" style="text-align: right">TOTAL NILAI</td>
+                      <td class="center"><span class="spanNilai">${Math.round(grandtotal/countsasaran*100)/100}</span></td>
+                      <td  colspan="2"></td>
+                  </tr>`; 
+        }
+        html +=         `</tbody>
                       </table>
                     </div>
                   </div>
                   <hr>`;
+        totalpersasaran = 0; count = 0;
       }
       prev_sasaran = obj.kode_sasaran;
     }
@@ -375,6 +394,15 @@ $this->load->view('pages/_partials/header');
       this.value = this.value.replace(/\D/g, '');
       if(parseInt(this.value)>100)
         this.value = 100;
+    }
+  });
+
+  $(document).on("click",".btn-remove-indicator", function(){
+    if(confirm("Hapus indikator ini dari KPI Anda?")){
+      var ind_det_id = $(this).data("detid");
+      var idx = indikator.findIndex(item=>item.ind_det_id==ind_det_id);
+      indikator.splice(idx,1);
+      reloadTable();
     }
   });
 </script>
