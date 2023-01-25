@@ -120,6 +120,7 @@ $(function() {
     let body = $('body');
 
     if(!mini) {
+      document.cookie = "sidebar=full"; 
       body.removeClass('sidebar-mini');
       $(".main-sidebar").css({
         overflow: 'hidden'
@@ -133,6 +134,7 @@ $(function() {
       $(".main-sidebar .sidebar-menu > li > a").removeAttr('data-original-title');
       $(".main-sidebar .sidebar-menu > li > a").removeAttr('title');
     }else{
+      document.cookie = "sidebar=mini"; 
       body.addClass('sidebar-mini');
       body.removeClass('sidebar-show');
       sidebar_nicescroll.remove();

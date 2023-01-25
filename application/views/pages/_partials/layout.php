@@ -1,7 +1,8 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
+$this->load->helper('cookie'); 
 ?>
-<body>
+<body class="<?php if(get_cookie('sidebar')=="mini") { echo "sidebar-mini"; } ?>">
   <div id="app">
     <div class="main-wrapper main-wrapper-1">
       <div class="navbar-bg"></div>

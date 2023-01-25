@@ -45,13 +45,36 @@ $this->load->view('pages/_partials/header');
     padding: 0px 4px !important;
     width: 100% !important;
   }
+  input.inpReal{
+    text-align: center;
+  }
+  .file{
+    padding: 5px 7px !important;
+  }
+  input[type=file]::file-selector-button {
+    margin-right: 20px;
+    border: none;
+    background: #6777ef;
+    padding: 4px 8px !important;
+    border-radius: 2px;
+    color: #fff;
+    cursor: pointer;
+    font-size: 10px;
+    top: -4px;
+    transition: background .2s ease-in-out;
+  }
+
+  input[type=file]::file-selector-button:hover {
+    background: #0d45a5;
+  }
+
 </style>
 <script>
   var indikator = [];
   var tempid = 1;
 
 </script>
-<div class="modal" id="modal-tambah-indikator" tabindex="-1" role="dialog">
+<div class="modal" id="modal-document" tabindex="-1" role="dialog">
   <div class="modal-dialog modal-lg" role="document">
     <div class="modal-content">
       <div class="modal-header">
@@ -63,101 +86,30 @@ $this->load->view('pages/_partials/header');
       </hr>
       <div class="modal-body">
         <div class="row">
-          <div class="col-md-2">
-            <label>Program</label>
+          <div class="col-md-10">
+            <input type="file" class="form-control file" id="inp-file" multiple/>
+            <input type="hidden" class="form-control" id="inp-detid" readonly/>
           </div>
-          <div class="col-md-9">
-          <input type="hidden" class="form-control" id="tempid"/>
-          <input type="hidden" class="form-control" id="sasaran"/>
-          <select class="form-control mySelect" id="program" autocomplete="off" required>
-            <option></option>
-          </select>
+          <div class="col-md-2">
+            <button type="button" class="btn btn-sm btn-primary btn-upload" style="top: 5px;position: relative;">Unggah</button>
           </div>
         </div>
         <div class="row">
-          <div class="col-md-2">
-            <label>Indikator</label>
-          </div>
-          <div class="col-md-9">
-          <textarea id="indikator" class="form-control"></textarea>
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-md-2">
-            <label>Tipe</label>
-          </div>
-          <div class="col-md-9">
-          <select class="form-control mySelect" id="tipe" autocomplete="off" required>
-            <option value="Persentase">Persentase</option>
-            <option value="Batas Persentase">Batas Persentase</option>
-            <option value="Angka">Angka</option>
-            <option value="Batas Angka">Batas Angka</option>
-            <option value="Pilihan Kustom">Pilihan Kustom</option>
-          </select>
-          </div>
-        </div>
-        <div class="row">
-          <div class="col-md-2">
-            <label>Satuan</label>
-          </div>
-          <div class="col-md-3">
-            <input type="text" class="form-control" id="satuan"/>
-          </div>
-          <div class="col-md-1"></div>
-          <div class="col-md-2">
-            <label>Target</label>
-          </div>
-          <div class="col-md-3">
-            <input type="text" class="form-control" id="target"/>
-          </div>
-        </div>
-        <div class="row" id="rowCustomValue">
-          <div class="col-md-2">
-            <label>Pilihan</label> <button type='button' class='btn btn-sm btn-add-choice'>&nbsp;<i class='fa fa-plus'></i>&nbsp;</button>
-          </div>
-          <div class="col-md-9">
-            <table id="tableChoice" class="table table-striped table-sm">
+          <div class="col-md-12">
+            <table style="width:100%" id="table-document" class="table table-striped table-md">
               <thead>
                 <tr>
-                  <th>Pilihan</th>
-                  <th style="width: 70px;">Nilai</th>
-                  <th style="width: 20px;">Target</th>
-                  <th style="width: 20px;"></th>
+                  <th>No</th>
+                  <th>Nama Dokumen</th>
+                  <th>Aksi</th>
                 </tr>
               </thead>
               <tbody>
+                <tr><td colspan="3" style="text-align:center">Tidak ada data</td></tr>
               </tbody>
             </table>
           </div>
         </div>
-        <div class="row" style="display:none">
-          <div class="col-md-2">
-            <label>Min <span style="color:red">*)</span></label>
-          </div>
-          <div class="col-md-3">
-            <input type="text" class="form-control" id="min" value=""/>
-          </div>
-          <div class="col-md-1"></div>
-          <div class="col-md-2">
-            <label>Max <span style="color:red">*)</span></label>
-          </div>
-          <div class="col-md-3">
-            <input type="text" class="form-control" id="max" value="100"/>
-          </div><br>
-          <div class="col-md-12">
-            <span style="color:red">*) Jika diisi, nilai minimal atau nilai maksimal dari suatu indikator sesuai dengan nilai yang diisikan</span>
-          </div>
-        </div>
-        <div class="row"  style="display:none">
-          <div class="col-md-12">
-            <span style="color:red">*) Jika diisi, nilai minimal atau nilai maksimal dari suatu indikator sesuai dengan nilai yang diisikan</span>
-          </div>
-        </div>
-      </div>
-      <div class="modal-footer">
-        <?php if($indicator->status!=="Dipublikasi"){ ?>
-        <button type="button" class="btn btn-primary" onclick="saveIndikator()">Simpan</button>
-        <?php } ?>
       </div>
     </div>
   </div>
@@ -184,8 +136,11 @@ $this->load->view('pages/_partials/header');
                 <input type="text" class="form-control" id="cboIndicator"/>
               </div>
               <div class="form-group col-md-2">
-                <button type="button" class="btn btn-sm btn-primary" title="Tambah" id="btnAddIndicator">
+                <button type="button" class="btn btn-sm btn-primary" title="Tambah" id="btnAddIndicator" style="top: 5px;position: relative;">
                   &nbsp;<i class='fa fa-plus'></i>&nbsp;
+                </button>
+                <button type="button" class="btn btn-sm btn-primary" title="Tambah Semua" id="btnAddAllIndicators" style="top: 5px;position: relative;">
+                  &nbsp;<i class='fa fa-arrow-down'></i>&nbsp;
                 </button>
               </div>
             </div>
@@ -205,6 +160,7 @@ $this->load->view('pages/_partials/header');
 </div>
 <?php $this->load->view('pages/_partials/footer'); ?>
 <script>
+  var tempindikator = [];
   <?php if($this->session->flashdata('message')){ ?>
     alert("<?php echo $this->session->flashdata('message'); ?>");
   <?php } ?>
@@ -221,6 +177,7 @@ $this->load->view('pages/_partials/header');
     }).done(function (data) {
         var result = data.indicator;
         console.log(result);
+        tempindikator = data.indicator;
         $("#cboIndicator").select2({
             placeholder: 'Pilih Indikator',
             allowClear: true,
@@ -274,6 +231,33 @@ $this->load->view('pages/_partials/header');
       dokumen: []
     }
     indikator.push(obj);
+    reloadTable();
+  });
+
+  $(document).on("click","#btnAddAllIndicators",function(){
+    for(var i=0;i<tempindikator.length;i++){
+      selected = tempindikator[i];
+      
+      if(indikator.findIndex(item=>item.ind_det_id==selected.ind_det_id)>-1){}else{
+        var obj = {
+          ind_det_user_id: -1,
+          ind_det_id: selected.ind_det_id,
+          kode_sasaran: selected.kode_sasaran,
+          nama_sasaran: selected.nama_sasaran,
+          kode_indikator: selected.kode_indikator,
+          nama_indikator: selected.nama_indikator,
+          satuan_indikator: selected.satuan_indikator,
+          target_indikator: selected.target_indikator,
+          target_indikator_value: selected.target_indikator_val,
+          tipe_indikator: selected.tipe_indikator,
+          pilihan: selected.pilihan,
+          realisasi: null,
+          dokumen: []
+        }
+        indikator.push(obj);
+      }
+    }
+    
     reloadTable();
   });
 
@@ -337,7 +321,7 @@ $this->load->view('pages/_partials/header');
                   <td>${htmlInp}</td>
                   <td class="center">${obj.target_indikator}</td>
                   <td class="center"><span class="spanNilai">${nilai}</span></td>
-                  <td><span>0</span><button type="button" data-detid="${obj.ind_det_id}" class="btn btn-icon btn-sm btn-secondary btn-document" style="float: right" onclick="return false;"><i class="fa fa-search"></i></button></td>
+                  <td><span>${obj.dokumen.length}</span><button type="button" data-detid="${obj.ind_det_id}" class="btn btn-icon btn-sm btn-secondary btn-document" style="float: right" onclick="return false;"><i class="fa fa-search"></i></button></td>
                   <td><button type="button" data-detid="${obj.ind_det_id}" class="btn btn-icon btn-sm btn-danger btn-remove-indicator"><i class="fa fa-times"></i></button></td>
                </tr>`;
       if(i==indikator.length-1||indikator[i+1].kode_sasaran!==obj.kode_sasaran){  
@@ -405,4 +389,118 @@ $this->load->view('pages/_partials/header');
       reloadTable();
     }
   });
+
+  $(document).on("click",".btn-document", function(){
+    var ind_det_id = $(this).data("detid");
+    var obj = indikator.find(item=>item.ind_det_id==ind_det_id);
+    $("#modal-document .modal-title").html(obj.kode_indikator+" "+obj.nama_indikator);
+    $("#modal-document #inp-detid").val(ind_det_id);
+    populateAttachmentTable(ind_det_id);
+    $("#modal-document").modal("show");
+  });
+
+  $(document).on("click",".btn-upload", function(){
+    if(confirm("Unggah dokumen ini ?")){
+        if(1==1){//tambah ke temporary table
+            var items = $("#inp-file")[0];
+            var filelength = items.files.length;
+            var ind_det_id = $("#inp-detid").val().trim();
+            var selected = indikator.find(item=>item.ind_det_id==ind_det_id);
+            if(items.files.length > 0){
+                for(var i=0;i<items.files.length;i++){
+                    (function(file,selected){
+                        toBase64(file).then(function(datafile){
+                            console.log(datafile.file.name);
+                            var d = new Date();
+                            var splitname = datafile.file.name.split(".");
+                            var ext = splitname[splitname.length-1];
+                            selected.dokumen.push({ filename: datafile.file.name, file: datafile.value });
+                        });
+                    })(items.files[i],selected);
+                    if(i==items.files.length-1){
+                        setTimeout(function(){
+                            $("#inp-file").val(null);
+                            populateAttachmentTable(ind_det_id);
+                            reloadTable();
+                        },500);
+                    }
+                }
+            }
+        }else{//panggil api untuk upload dan save ke db
+            //UPLOAD FILENYA
+            
+        }
+    }
+  });
+
+  function populateAttachmentTable(ind_det_id){
+    var selected = indikator.find(item=>item.ind_det_id==ind_det_id);
+    var html = "";
+    for(var i=0; i<selected.dokumen.length; i++){
+      var obj = selected.dokumen[i];
+      html += `<tr>
+                  <td>${(i+1)}</td>
+                  <td>${(obj.filename)}</td>
+                  <td><button type="button" data-idx="${i}" data-detid="${ind_det_id}" class="btn btn-icon btn-sm btn-danger btn-remove-doc"><i class="fa fa-times"></i></button></td>
+              </tr>`;
+    }
+    if(html==""){
+      html +=   `<tr>
+                  <td colspan="3" style="text-align: center;">Tidak ada data</td>
+                </tr>`;
+    }
+    $("#table-document tbody").html(html);
+  }
+
+  $(document).on("click", ".btn-remove-doc", function(){
+    if(confirm("Hapus dokumen ini?")){
+      var selected = indikator.find(item=>item.ind_det_id==parseInt($(this).data("detid")));
+      selected.dokumen.splice(parseInt($(this).data("idx")),1);
+      populateAttachmentTable(parseInt($(this).data("detid")));
+      reloadTable();
+    }
+  });
+  
+  $(document).on("click", ".btn-save", function(){
+    var param = {
+      data: indikator
+    };
+
+    $.ajax({
+        url: '<?php echo base_url(); ?>indicator/api/save_kpi',
+        type: 'POST',
+        data: JSON.stringify({
+                data: indikator
+              }),
+        dataType : "json",
+        contentType: "application/json; charset=utf-8",
+        success: function(data) {
+          console.log(data);
+          alert(data.message);
+          if(data.ok==1){
+            location.reload();
+          }
+        },
+        error: function(data) {
+            console.log(data);
+        }
+    });
+  });
+
+  function toBase64(file){
+    console.log("toBase64 called");
+    return new Promise(function(resolve, reject) {
+      var reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = function(){
+          dataURL = reader.result;
+          dataURL = dataURL.replace('data:', '').replace(/^.+,/, '');
+          
+          resolve({value: dataURL, file: file});
+      }
+      // Typescript users: use following line
+      // reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+    });
+  }
 </script>
