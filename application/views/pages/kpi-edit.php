@@ -441,7 +441,14 @@ $this->load->view('pages/_partials/header');
       html += `<tr>
                   <td>${(i+1)}</td>
                   <td>${(obj.filename)}</td>
-                  <td><button type="button" data-idx="${i}" data-detid="${ind_det_id}" class="btn btn-icon btn-sm btn-danger btn-remove-doc"><i class="fa fa-times"></i></button></td>
+                  <td>
+                    <button type="button" data-idx="${i}" data-detid="${ind_det_id}" class="btn btn-icon btn-sm btn-primary btn-download-temp" onclick="downloadBase64File('${obj.file}','${obj.filename}')">
+                      <i class="fa fa-download"></i>
+                    </button>
+                    <button type="button" data-idx="${i}" data-detid="${ind_det_id}" class="btn btn-icon btn-sm btn-danger btn-remove-doc">
+                      <i class="fa fa-times"></i>
+                    </button>
+                  </td>
               </tr>`;
     }
     if(html==""){
@@ -462,14 +469,11 @@ $this->load->view('pages/_partials/header');
   });
   
   $(document).on("click", ".btn-save", function(){
-    var param = {
-      data: indikator
-    };
-
     $.ajax({
         url: '<?php echo base_url(); ?>indicator/api/save_kpi',
         type: 'POST',
         data: JSON.stringify({
+                id: $("#id").val(),
                 data: indikator
               }),
         dataType : "json",
@@ -503,4 +507,40 @@ $this->load->view('pages/_partials/header');
       reader.onerror = reject;
     });
   }
+
+  function downloadBase64File(contentBase64, fileName) {
+    var splitname = fileName.split(".");                
+    var tempExt = splitname[splitname.length-1]
+    var mimetype = getMimeByExt(tempExt.toString().toLowerCase());
+    console.log(mimetype);
+    const linkSource = "data:"+mimetype+";base64,"+contentBase64;
+    const downloadLink = document.createElement('a');
+    document.body.appendChild(downloadLink);
+
+    downloadLink.href = linkSource;
+    downloadLink.target = '_self';
+    downloadLink.download = fileName;
+    downloadLink.click(); 
+  }   
+
+  (function() {
+    var extToMimes = {
+        'jpg': 'image/jpeg',
+        'png': 'image/png',
+        'pdf': 'application/pdf',
+        'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'xls': 'application/vnd.ms-excel',
+        'doc': 'application/msword',
+        'docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    }
+
+    window.getMimeByExt = function(ext) {
+        if (extToMimes.hasOwnProperty(ext)) {
+            return extToMimes[ext];
+        }
+        return false;
+    }
+
+  })();
+  reloadTable();
 </script>

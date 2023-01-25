@@ -566,5 +566,22 @@ class Pages extends CI_Controller {
 		$data = $this->kpi_model->get_indicator($indicator_id);
 		echo json_encode($data);
 	}
+
+	public function process_kpi_add(){
+		if(!$this->check_login_api()){
+			return false;
+		}
+		$this->load->model('kpi_model');
+		
+		$json = file_get_contents('php://input');
+		$obj = json_decode($json);
+		$this->load->model('user_model');
+		$user = $this->user_model->get_user_by_username($_SESSION["username"]);
+    
+		$data = $this->indicator_model->add_indicator($user,$obj);
+		//$this->session->set_flashdata('message', $data->message);
+		echo json_encode($data);
+		//exit();
+	}
 	/** PAGE KPI - END */
 }
