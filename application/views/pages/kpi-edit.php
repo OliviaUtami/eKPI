@@ -164,7 +164,10 @@ $this->load->view('pages/_partials/header');
   <?php if($this->session->flashdata('message')){ ?>
     alert("<?php echo $this->session->flashdata('message'); ?>");
   <?php } ?>
+  
   var indikator = [];
+
+  <?php echo "var xxx = JSON.parse(`".json_encode($indicator->details)."`);"; ?>
   function populateIndikator(){
     var params = {
       indicator_id: <?php echo $indicator->indicator_id; ?>
@@ -296,12 +299,16 @@ $this->load->view('pages/_partials/header');
       if(obj.tipe_indikator=="Persentase"||obj.tipe_indikator=="Batas Persentase"){
         htmlInp += `<input type="text" class="form-control percentage inpReal smallInput" autocomplete="off" data-detid="${obj.ind_det_id}" value="${obj.realisasi??""}"/>`;
         if(obj.tipe_indikator=="Persentase"&&obj.realisasi!==null){
-          nilai = parseInt(obj.realisasi)/parseInt(obj.target_indikator_value)*100;
+          nilai = Math.round(parseInt(obj.realisasi)/parseInt(obj.target_indikator_value)*100*100)/100;
+        }else if(obj.tipe_indikator=="Batas Persentase"&&obj.realisasi!==null){
+          nilai = Math.round((parseInt(obj.target_indikator_value)-parseInt(obj.realisasi))/parseInt(obj.target)*100*100)/100;
         }
       }else if(obj.tipe_indikator=="Angka"||obj.tipe_indikator=="Batas Angka"){
         htmlInp += `<input type="text" class="form-control number inpReal smallInput" autocomplete="off" data-detid="${obj.ind_det_id}" value="${obj.realisasi??""}"/>`;
         if(obj.tipe_indikator=="Angka"&&obj.realisasi!==null){
           nilai = Math.round(parseInt(obj.realisasi)/parseInt(obj.target_indikator_value)*100*100)/100;
+        }else if(obj.tipe_indikator=="Angka"&&obj.realisasi!==null){
+          nilai = Math.round((parseInt(obj.target_indikator_value)-parseInt(obj.realisasi))/parseInt(obj.target_indikator_value)*100*100)/100;
         }
       }else{
         htmlInp += `<select class="form-control inpReal smallSelect" data-detid="${obj.ind_det_id}">`;
@@ -468,9 +475,9 @@ $this->load->view('pages/_partials/header');
     }
   });
   
-  $(document).on("click", ".btn-save", function(){
+  $(document).on("click", "#btn-save", function(){
     $.ajax({
-        url: '<?php echo base_url(); ?>indicator/api/save_kpi',
+        url: '<?php echo base_url(); ?>kpi/api/save_kpi',
         type: 'POST',
         data: JSON.stringify({
                 id: $("#id").val(),

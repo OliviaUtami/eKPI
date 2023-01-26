@@ -576,10 +576,9 @@ class Pages extends CI_Controller {
 		$json = file_get_contents('php://input');
 		$obj = json_decode($json);
 		$this->load->model('user_model');
+		//echo var_dump($obj);
 		$user = $this->user_model->get_user_by_username($_SESSION["username"]);
-    
-		$data = $this->indicator_model->add_indicator($user,$obj);
-		//$this->session->set_flashdata('message', $data->message);
+		$data = $this->kpi_model->add_kpi($user,$obj);
 		echo json_encode($data);
 		//exit();
 	}
