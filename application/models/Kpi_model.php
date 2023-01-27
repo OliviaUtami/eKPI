@@ -1,5 +1,7 @@
 <?php
 class kpi_model extends CI_Model {
+  private $allowed = array("image/jpeg", "image/jpg", "image/png", "application/pdf", "application/msword", "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet","application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/vnd.oasis.opendocument.spreadsheet","application/wps-office.doc");
+
   public function get_my_kpi($user_id){
     $sql = "SELECT 
               p.period_id, 
@@ -63,6 +65,20 @@ class kpi_model extends CI_Model {
             WHERE h.status = 'Dipublikasi' AND h.org_id = ? AND h.indicator_id = ?
             ORDER BY d.kode ASC ";
     $data->details = $this->db->query($sql, array($user->user_id,$user->org_id,$indicator_id))->result();
+    foreach ($data->details as $det){
+      $sql = "SELECT file_id, file_name, file_path
+              FROM indicator_user_det_file f
+              WHERE ind_user_det_id = ? ORDER BY FILE_ID ASC ";
+      $dokumen = $this->db->query($sql,array($det->ind_user_det_id))->result();
+      $det->dokumen = $dokumen;
+      if($det->tipe_indikator=="Pilihan Kustom"){
+        $sql   = "SELECT custval_id, nama, nilai FROM indicator_custom_value WHERE ind_det_id = ? ORDER BY custval_id ASC";
+        $pilihan = $this->db->query($sql,array($ind->ind_det_id))->result();
+        $det->pilihan = $pilihan;
+      }else{
+        $det->pilihan = array();
+      }
+    }
     return $data;
   }
 
@@ -127,7 +143,11 @@ class kpi_model extends CI_Model {
           $nilai = $this->calc_nilai($obj->tipe_indikator, $obj->target_indikator, $obj->target_indikator_value, $obj->realisasi);
 
           $this->db->query($sql, array($ind_user_id, $obj->ind_det_id, $obj->realisasi, $obj->target_indikator, $nilai, $user->username));
-          $in = $this->db->insert_id();
+          $ind_user_det_id = $this->db->insert_id();
+
+          foreach($obj->dokumen as $dokumen){
+
+          }
         }
         $message = "KPI berhasil disimpan";
       }

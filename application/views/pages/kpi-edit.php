@@ -167,7 +167,7 @@ $this->load->view('pages/_partials/header');
   
   var indikator = [];
 
-  <?php echo "var xxx = JSON.parse(`".json_encode($indicator->details)."`);"; ?>
+  <?php echo "indikator = ".json_encode($indicator->details).";"; ?>
   function populateIndikator(){
     var params = {
       indicator_id: <?php echo $indicator->indicator_id; ?>
