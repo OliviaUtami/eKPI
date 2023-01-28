@@ -34,11 +34,12 @@ $this->load->view('pages/_partials/header');
                         <td><?php echo($data->approved_by."<br/>".$data->approved_at); ?></td>
                         <td>
                             <?php if($data->status=="Draft"||$data->status=="Menunggu Revisi"){ ?>
-                            <button class="btn btn-sm btn-warning" onclick="editDraft(<?php echo $data->draft_id; ?>)" title="Edit Draft"><i class="fa fa-edit"></i></button>
-                            <button class="btn btn-sm btn-success" onclick="reqApproval(<?php echo $data->draft_id; ?>)" title="Request for Approval"><i class="fa fa-share"></i></button>
+                            <button class="btn btn-sm btn-warning" onclick="editDraft(<?php echo $data->draft_id; ?>)" title="Perbarui Draft"><i class="fa fa-edit"></i></button>
+                            <button class="btn btn-sm btn-success" onclick="reqApproval(<?php echo $data->draft_id; ?>)" title="Minta Persetujuan"><i class="fa fa-share"></i></button>
                             <?php } ?>
                             <?php if($data->status=="Disetujui"){ ?>
-                            <button class="btn btn-sm btn-primary" onclick="editDraft(<?php echo $data->draft_id; ?>)" title="View Draft"><i class="fa fa-eye"></i></button>
+                            <button class="btn btn-sm btn-primary" onclick="editDraft(<?php echo $data->draft_id; ?>)" title="Lihat Draft"><i class="fa fa-eye"></i></button>
+                            <button class="btn btn-sm btn-primary" onclick="copyDraft(<?php echo $data->draft_id; ?>)" title="Salin Draft"><i class="fa fa-copy"></i></button>
                             <?php } ?>
                         </td>
                     </tr>
@@ -91,5 +92,10 @@ $this->load->view('pages/_partials/header');
     function reqApproval(id){
       if(confirm("Ajukan draft sebagai acuan pengisian KPI tahunan?\nDraft yang diajukan dan disetujui tidak akan bisa diperbarui"))
         window.location.replace("draft/rfa/"+id);
+    }
+
+    function copyDraft(id){
+      if(confirm("Salin draft ini?"))
+        window.location.replace("draft/copy/"+id);
     }
 </script>

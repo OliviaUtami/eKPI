@@ -21,10 +21,16 @@ class period_model extends CI_Model {
 
   public function add_period($period_from, $period_to, $status, $created, $draft_id){
     $message = ""; $ok = 1;
-    //$exist = $this->db->query("SELECT COUNT(1) count FROM period WHERE period_from = ? and is_active = 1",array($username))->row();
-    //if((int) $exist->count > 0){
+    
     if($status=="Aktif"&&$draft_id==""){
+      $ok = 0;
       $message = "Silahkan pilih Draft KPI untuk dapat mengaktifkan periode pengisian";
+    }else if($status=="Aktif"){
+      $draft_kembar = $this->db->query("SELECT COUNT(1) count FROM period WHERE draft_id = ? and status = 'Aktif'",array($draft_id))->row();
+      if($draft_kembar!==null&&$draft_kembar->count>0){
+        $ok = 0;
+        $message = "Draft sudah pernah digunakan pada periode lain, silahkan gunakan draft lain untuk periode ini";
+      }
     }else{
       if($draft_id=="")
         $draft_id=null;
@@ -46,7 +52,14 @@ class period_model extends CI_Model {
     //$exist = $this->db->query("SELECT COUNT(1) count FROM period WHERE period_from = ? and is_active = 1",array($username))->row();
     //if((int) $exist->count > 0){
     if($status=="Aktif"&&$draft_id==""){
+      $ok = 0;
       $message = "Silahkan pilih Draft KPI untuk dapat mengaktifkan periode pengisian";
+    }else if($status=="Aktif"){
+      $draft_kembar = $this->db->query("SELECT COUNT(1) count FROM period WHERE draft_id = ? and status = 'Aktif' and period_id <> ?",array($draft_id,$period_id))->row();
+      if($draft_kembar!==null&&$draft_kembar->count>0){
+        $ok = 0;
+        $message = "Draft sudah pernah digunakan pada periode lain, silahkan gunakan draft lain untuk periode ini";
+      }
     }else{
       if($draft_id=="")
         $draft_id=null;

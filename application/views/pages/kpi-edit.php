@@ -219,7 +219,7 @@ $this->load->view('pages/_partials/header');
     }
     var selected = $("#cboIndicator").select2("data")[0];
     var obj = {
-      ind_det_user_id: -1,
+      ind_user_det_id: -1,
       ind_det_id: selected.ind_det_id,
       kode_sasaran: selected.kode_sasaran,
       nama_sasaran: selected.nama_sasaran,
@@ -243,7 +243,7 @@ $this->load->view('pages/_partials/header');
       
       if(indikator.findIndex(item=>item.ind_det_id==selected.ind_det_id)>-1){}else{
         var obj = {
-          ind_det_user_id: -1,
+          ind_user_det_id: -1,
           ind_det_id: selected.ind_det_id,
           kode_sasaran: selected.kode_sasaran,
           nama_sasaran: selected.nama_sasaran,
@@ -421,7 +421,7 @@ $this->load->view('pages/_partials/header');
                             var d = new Date();
                             var splitname = datafile.file.name.split(".");
                             var ext = splitname[splitname.length-1];
-                            selected.dokumen.push({ filename: datafile.file.name, file: datafile.value });
+                            selected.dokumen.push({ id: -1, filename: datafile.file.name, file: datafile.value });
                         });
                     })(items.files[i],selected);
                     if(i==items.files.length-1){
@@ -433,9 +433,6 @@ $this->load->view('pages/_partials/header');
                     }
                 }
             }
-        }else{//panggil api untuk upload dan save ke db
-            //UPLOAD FILENYA
-            
         }
     }
   });
@@ -448,11 +445,17 @@ $this->load->view('pages/_partials/header');
       html += `<tr>
                   <td>${(i+1)}</td>
                   <td>${(obj.filename)}</td>
-                  <td>
-                    <button type="button" data-idx="${i}" data-detid="${ind_det_id}" class="btn btn-icon btn-sm btn-primary btn-download-temp" onclick="downloadBase64File('${obj.file}','${obj.filename}')">
+                  <td>`;
+      if(obj.id==-1){
+        html+=     `<button type="button" data-idx="${i}" data-detid="${ind_det_id}" class="btn btn-icon btn-sm btn-primary btn-download-temp" onclick="downloadBase64File('${obj.file}','${obj.filename}')">
                       <i class="fa fa-download"></i>
-                    </button>
-                    <button type="button" data-idx="${i}" data-detid="${ind_det_id}" class="btn btn-icon btn-sm btn-danger btn-remove-doc">
+                    </button>`;
+      }else{
+        html+=     `<a href="<?php echo base_url(); ?>${obj.file}" target="_blank" class="btn btn-icon btn-sm btn-primary btn-download-temp">
+                      <i class="fa fa-download"></i>
+                    </a>`;
+      }
+        html+=      `<button type="button" data-idx="${i}" data-detid="${ind_det_id}" class="btn btn-icon btn-sm btn-danger btn-remove-doc">
                       <i class="fa fa-times"></i>
                     </button>
                   </td>
@@ -529,6 +532,7 @@ $this->load->view('pages/_partials/header');
     downloadLink.download = fileName;
     downloadLink.click(); 
   }   
+
 
   (function() {
     var extToMimes = {

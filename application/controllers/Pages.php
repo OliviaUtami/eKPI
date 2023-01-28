@@ -308,7 +308,7 @@ class Pages extends CI_Controller {
 		if($data->ok == 1){
 			redirect('/period');
 		}else{
-			redirect('/period/edit');
+			redirect('/period/edit/'.$period_id);
 		}
 	}
 	/** PAGE INDICATOR - END */

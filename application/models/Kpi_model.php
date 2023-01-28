@@ -66,7 +66,7 @@ class kpi_model extends CI_Model {
             ORDER BY d.kode ASC ";
     $data->details = $this->db->query($sql, array($user->user_id,$user->org_id,$indicator_id))->result();
     foreach ($data->details as $det){
-      $sql = "SELECT file_id, file_name, file_path
+      $sql = "SELECT file_id id, file_name filename, file_path file
               FROM indicator_user_det_file f
               WHERE ind_user_det_id = ? ORDER BY FILE_ID ASC ";
       $dokumen = $this->db->query($sql,array($det->ind_user_det_id))->result();
@@ -124,9 +124,91 @@ class kpi_model extends CI_Model {
       $indikator_id = $reqdata->id;
       $used = $this->db->query("SELECT count(1) cnt FROM indicator_user WHERE user_id = ? and indicator_id = ?",array($user->user_id, $indikator_id))->row();
       if($used->cnt>0){//update
-        $existing = $this->db->query("SELECT indicator_id FROM indicator_user WHERE user_id = ? and indicator_id = ?",array($user->user_id, $indikator_id))->row();
+        $existing = $this->db->query("SELECT ind_user_id FROM indicator_user WHERE user_id = ? and indicator_id = ?",array($user->user_id, $indikator_id))->row();        
+        $ind_user_id = $existing->ind_user_id;
+        $sql = "UPDATE indicator_user SET
+                  updated_by = ?, 
+                  updated_at = now(),
+                  status = ?
+                WHERE ind_user_id = ?";
+        $this->db->query($sql, array($user->username, "Draft", $ind_user_id));
+
+        $sql = "UPDATE indicator_user_detail SET
+                  edit = 1
+                WHERE ind_user_id = ?";
+        $this->db->query($sql, array($ind_user_id));
+
+        for($i=0;$i<count($indikator);$i++){
+          $obj = $indikator[$i];
+          if($obj->ind_user_det_id==-1){
+            $sql = "INSERT INTO indicator_user_detail
+                      (ind_user_id, ind_det_id, realisasi, target, nilai, created_by)
+                    VALUES (?, ?, ?, ?, ?, ?)";
+
+            //hitung nilai
+            $nilai = $this->calc_nilai($obj->tipe_indikator, $obj->target_indikator, $obj->target_indikator_value, $obj->realisasi);
+
+            $this->db->query($sql, array($ind_user_id, $obj->ind_det_id, $obj->realisasi, $obj->target_indikator, $nilai, $user->username));
+            $ind_user_det_id = $this->db->insert_id();
+
+          }else{
+            $sql = "SELECT ind_user_det_id FROM indicator_user_detail
+                    WHERE ind_det_id = ? and ind_user_id = ? ";
+            $det = $this->db->query($sql, array($obj->ind_det_id, $ind_user_id))->row();
+            $ind_user_det_id = $det->ind_user_det_id;
+            $nilai = $this->calc_nilai($obj->tipe_indikator, $obj->target_indikator, $obj->target_indikator_value, $obj->realisasi);
+
+            $sql = "UPDATE indicator_user_detail SET
+                      edit = 0, 
+                      realisasi = ?, 
+                      target = ?, 
+                      nilai = ?, 
+                      updated_by = ?,
+                      updated_at = now()
+                    WHERE ind_user_det_id = ?";
+            $this->db->query($sql, array($obj->realisasi, $obj->target_indikator, $nilai, $user->username, $ind_user_det_id));           
+          }
+          
+          $sql = "UPDATE indicator_user_det_file SET
+                    edit = 1
+                  WHERE ind_user_det_id = ?";
+          $this->db->query($sql, array($ind_user_det_id));
+
+          foreach($obj->dokumen as $dokumen){
+            if($dokumen->id==-1){
+              $dirUpload = "assets/documents/";
+              
+              $filename = explode(".",$dokumen->filename);
+              $filepath = $dirUpload.str_replace('.', ' ', $obj->kode_indikator."-".$user->user_id."-".uniqid());
+              $terupload = file_put_contents($filepath,base64_decode($dokumen->file));
+              $sql = "INSERT INTO indicator_user_det_file
+                      (ind_user_det_id, file_name, file_path, created_by)
+                      VALUES (?, ?, ?, ?) ";
+              $this->db->query($sql, array($ind_user_det_id, $dokumen->filename, $filepath, $user->username));
+            }else{
+              $sql = "UPDATE indicator_user_det_file SET
+                        edit = 0
+                      WHERE file_id = ?";
+              $this->db->query($sql, array($dokumen->id));
+            }
+          }
+          $sql = "SELECT file_path FROM indicator_user_det_file WHERE edit = 1 and ind_user_det_id = ?";
+          $delete = $this->db->query($sql, array($ind_user_det_id))->result();
+          foreach($delete as $del){
+            if(file_exists($del->file_path))
+            {
+                unlink($del->file_path);
+            }
+          }
+
+          $sql = "DELETE FROM indicator_user_det_file WHERE edit = 1 and ind_user_det_id = ?";
+          $this->db->query($sql, array($ind_user_det_id));
+        }
         
-        $message = "Indikator berhasil disimpanss";
+        $sql = "DELETE FROM indicator_user_detail WHERE edit = 1 and ind_user_id = ?";
+        $this->db->query($sql, array($ind_user_id));
+
+        $message = "Indikator berhasil disimpan";
       }else{
         $sql = "INSERT INTO indicator_user 
                   (indicator_id, user_id, created_by, status)
@@ -146,7 +228,15 @@ class kpi_model extends CI_Model {
           $ind_user_det_id = $this->db->insert_id();
 
           foreach($obj->dokumen as $dokumen){
-
+            $dirUpload = "assets/documents/";
+            
+            $filename = explode(".",$dokumen->filename);
+            $filepath = $dirUpload.str_replace('.', ' ', $obj->kode_indikator."-".$user->user_id."-".uniqid());
+            $terupload = file_put_contents($filepath,base64_decode($dokumen->file));
+            $sql = "INSERT INTO indicator_user_det_file
+                    (ind_user_det_id, file_name, file_path, created_by)
+                    VALUES (?, ?, ?, ?) ";
+            $this->db->query($sql, array($ind_user_det_id, $dokumen->filename, $filepath, $user->username));
           }
         }
         $message = "KPI berhasil disimpan";

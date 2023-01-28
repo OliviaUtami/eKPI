@@ -105,3 +105,4 @@ $route['kpi'] = 'pages/view_kpi_list';
 $route['kpi/edit/(:num)'] = 'pages/view_kpi_edit/$1';
 $route['kpi/api/get_indicator']['post'] = 'pages/get_indicator';
 $route['kpi/api/save_kpi']['post'] = 'pages/process_kpi_add';
+//$route['kpi/api/remove_doc']['post'] = 'pages/remove_doc';
