@@ -5,14 +5,35 @@ defined('BASEPATH') OR exit('No direct script access allowed');
   table, tr, td, th {
     border-collapse: collapse;
     border: 1px solid;
+    font-size: 12px;
   }
   .center{
     text-align: center;
   }
+  table td {
+    padding: 4px !important;
+    font-size: 12px;
+  }
   @media print{
+    body * {
+      visibility: hidden;
+    }
+    #divIsi, #divIsi * {
+      visibility: visible;
+    }
+    #divIsi {
+      position: absolute;
+      left: 0;
+      top: 0;
+    }
     table, tr, td, th {
       border-collapse: collapse;
       border: 1px solid;
+      font-size: 12px;
+    }
+    table td {
+      padding: 4px !important;
+      font-size: 12px;
     }
     .center{
       text-align: center;
@@ -32,15 +53,21 @@ defined('BASEPATH') OR exit('No direct script access allowed');
         <div class="card">
           <div class="card-body">
             <table style="width:100%" id="divIsi" class="table table-striped table-md">
-              <tbody>
                 <tr>
                   <td colspan="7"><b>KPI</b></td>
                 </tr>
                 <tr>
-                  <td style="width: 200px;"><b>Periode Pengisian</b></td>
-                  <td colspan="3" style="text-align: left"><b><?php echo ("&nbsp;".$indicator->period_from." - ".$indicator->period_to); ?></b></td>
+                  <td style="width: 90px;"><b>Periode </b></td>
+                  <td colspan="6" style="text-align: left;"><b><?php echo ($indicator->period_from." - ".$indicator->period_to); ?></b></td>
                 </tr>
-              </tbody>
+                <tr>
+                  <td style="width: 90px;"><b>Organisasi </b></td>
+                  <td colspan="6" style="text-align: left;"><b><?php echo ($indicator->org_name); ?></b></td>
+                </tr>
+                <tr>
+                  <td style="width: 90px;"><b>Nama </b></td>
+                  <td colspan="6" style="text-align: left;"><b><?php echo ($indicator->name); ?></b></td>
+                </tr>
             </table>
           </div>
           <div class="card-footer bg-whitesmoke">
@@ -232,20 +259,17 @@ defined('BASEPATH') OR exit('No direct script access allowed');
                     <td colspan="7"><b>SASARAN STRATEGIS ${obj.kode_sasaran.substr(1)+" : "+obj.nama_sasaran}</b></td>
                   </tr>
                   <tr>   
-                    <td colspan="7">
-                      <table style="width:100%" id="table-i-${obj.target_id}" class="table table-striped table-md">
-                        <thead>
+                    
                           <tr>
                             <th style="width: 100px;">KODE</th>
                             <th>INDIKATOR KINERJA PROGRAM</th>
                             <th class="center" style="width: 120px;">SATUAN</th>
-                            <th class="center" style="width: 120px;">REALISASI</th>
-                            <th class="center" style="width: 80px;">TARGET</th>
-                            <th class="center" style="width: 80px;">NILAI</th>
-                            <th class="center" style="width: 80px;">DOKUMEN</th>
+                            <th class="center" style="width: 100px;">REALISASI</th>
+                            <th class="center" style="width: 100px;">TARGET</th>
+                            <th class="center" style="width: 100px;">NILAI</th>
+                            <th class="center" style="width: 100px;">DOKUMEN</th>
                           </tr>
-                        </thead>
-                        <tbody>`;
+                        `;
       }
       var input_type = "number"; var htmlInp = ""; var nilai = 0;
       if(obj.tipe_indikator=="Persentase"||obj.tipe_indikator=="Batas Persentase"){
@@ -276,7 +300,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
                   <td class="center">${obj.target_indikator}</td>
                   <td class="center"><span class="spanNilai">${nilai}</span></td>
                   <td class="center"><span>${obj.dokumen.length}</span></td>
-               </tr>`;
+               `;
       if(i==indikator.length-1||indikator[i+1].kode_sasaran!==obj.kode_sasaran){  
         countsasaran++;
         grandtotal+=Math.round(totalpersasaran/count*100)/100;
@@ -293,10 +317,8 @@ defined('BASEPATH') OR exit('No direct script access allowed');
                       <td></td>
                   </tr>`; 
         }
-        html +=         `</tbody>
-                      </table>
-                    </td>
-                  </tr>`;
+        html +=         `
+                  `;
         totalpersasaran = 0; count = 0;
       }
       prev_sasaran = obj.kode_sasaran;
