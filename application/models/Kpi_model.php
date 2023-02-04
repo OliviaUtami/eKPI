@@ -12,7 +12,7 @@ class kpi_model extends CI_Model {
               u.user_id, u.username, o.org_name
             FROM period p
             JOIN draft d ON p.draft_id = d.draft_id
-            JOIN indicator i ON i.draft_id = d.draft_id
+            JOIN indicator i ON i.draft_id = d.draft_id and i.status = 'Disetujui'
             LEFT JOIN indicator_user iu ON i.indicator_id = iu.indicator_id
             JOIN user u ON i.org_id = u.org_id
             JOIN organization o ON u.org_id = o.org_id
@@ -22,11 +22,11 @@ class kpi_model extends CI_Model {
               p.period_id, 
               DATE_FORMAT(period_from, '%d/%m/%Y') period_from, DATE_FORMAT(period_to, '%d/%m/%Y') period_to, 
               d.draft_id, i.indicator_id, i.org_id, 
-              iu.ind_user_id, iu.user_id, coalesce(i.status,'Belum Ada') status, 
+              iu.ind_user_id, iu.user_id, coalesce(iu.status,'Belum Ada') status, 
               iu.remarks, i.created_by, DATE_FORMAT(i.created_at, '%d/%m/%Y %H:%i:%s') created_at,
               u.user_id, u.username, o.org_name
             FROM indicator_user iu
-            JOIN indicator i ON iu.indicator_id = i.indicator_id
+            JOIN indicator i ON iu.indicator_id = i.indicator_id and i.status = 'Disetujui'
             JOIN draft d ON i.draft_id = d.draft_id
             JOIN period p  ON p.draft_id = d.draft_id
             JOIN user u ON iu.user_id = u.user_id
@@ -39,13 +39,17 @@ class kpi_model extends CI_Model {
 
   public function get_kpi_indicator($indicator_id, $user){
     $sql = "SELECT 
+              p.name period_name,
               p.period_id, DATE_FORMAT(period_from, '%d/%m/%Y') period_from, DATE_FORMAT(period_to, '%d/%m/%Y') period_to, 
               p.draft_id, i.indicator_id, i.org_id, coalesce(iu.status,'Belum Ada') status, 
-              iu.created_by, DATE_FORMAT(iu.created_at, '%d/%m/%Y %H:%i:%s') created_at
+              iu.created_by, DATE_FORMAT(iu.created_at, '%d/%m/%Y %H:%i:%s') created_at,
+              o.org_name, u.name
             FROM indicator i
             JOIN period p on p.draft_id = i.draft_id
+            JOIN organization o on i.org_id = o.org_id
             LEFT JOIN indicator_user iu ON i.indicator_id = iu.indicator_id AND iu.user_id = ?
-            WHERE i.indicator_id = ? and i.status = 'Dipublikasi' ";
+            LEFT JOIN user u on iu.user_id = u.user_id
+            WHERE i.indicator_id = ? and i.status = 'Disetujui' ";
     $data = $this->db->query($sql,array($user->user_id, $indicator_id))->row();
 
     $sql = "SELECT 
@@ -56,13 +60,13 @@ class kpi_model extends CI_Model {
                 d.tipe tipe_indikator, realisasi
             FROM indicator h
             JOIN indicator_detail d ON h.indicator_id = d.indicator_id
-            LEFT JOIN indicator_custom_value cv on d.ind_det_id = cv.ind_det_id
+            LEFT JOIN indicator_custom_value cv on d.ind_det_id = cv.ind_det_id and d.target = cv.nilai
             JOIN program p ON d.program_id = p.program_id
             JOIN target t ON t.target_id = p.target_id
             JOIN (indicator_user_detail ud 
               JOIN indicator_user uh on ud.ind_user_id = uh.ind_user_id )
               ON d.ind_det_id = ud.ind_det_id and uh.user_id = ?
-            WHERE h.status = 'Dipublikasi' AND h.org_id = ? AND h.indicator_id = ?
+            WHERE h.status = 'Disetujui' AND h.org_id = ? AND h.indicator_id = ?
             ORDER BY d.kode ASC ";
     $data->details = $this->db->query($sql, array($user->user_id,$user->org_id,$indicator_id))->result();
     foreach ($data->details as $det){
@@ -73,7 +77,7 @@ class kpi_model extends CI_Model {
       $det->dokumen = $dokumen;
       if($det->tipe_indikator=="Pilihan Kustom"){
         $sql   = "SELECT custval_id, nama, nilai FROM indicator_custom_value WHERE ind_det_id = ? ORDER BY custval_id ASC";
-        $pilihan = $this->db->query($sql,array($ind->ind_det_id))->result();
+        $pilihan = $this->db->query($sql,array($det->ind_det_id))->result();
         $det->pilihan = $pilihan;
       }else{
         $det->pilihan = array();
@@ -95,7 +99,7 @@ class kpi_model extends CI_Model {
             JOIN indicator_detail d ON h.indicator_id = d.indicator_id
             JOIN program p ON d.program_id = p.program_id
             JOIN target t ON t.target_id = p.target_id
-            WHERE h.status = 'Dipublikasi' AND h.indicator_id = ?
+            WHERE h.status = 'Disetujui' AND h.indicator_id = ?
             ORDER BY d.kode ASC ";
     $indicator = $this->db->query($sql,array($indicator_id))->result();
     foreach($indicator as $ind){
@@ -208,7 +212,7 @@ class kpi_model extends CI_Model {
         $sql = "DELETE FROM indicator_user_detail WHERE edit = 1 and ind_user_id = ?";
         $this->db->query($sql, array($ind_user_id));
 
-        $message = "Indikator berhasil disimpan";
+        $message = "KPI berhasil disimpan";
       }else{
         $sql = "INSERT INTO indicator_user 
                   (indicator_id, user_id, created_by, status)
@@ -241,19 +245,23 @@ class kpi_model extends CI_Model {
         }
         $message = "KPI berhasil disimpan";
       }
+      if($ok==1){
+        $this->db->trans_commit();
+      }else{
+        $this->db->trans_rollback();
+      }
       $data = (object) [
         "ok"      => $ok,
         "message" => $message
       ];
-      $this->db->trans_commit();
       return $data;
     }catch (Exception $e) {
       $this->db->trans_rollback();
       $data = (object) [
         "ok"      => $ok,
-        "message" => '%s : %s : DB transaction failed. Error no: %s, Error msg:%s, Last query: %s', __CLASS__, __FUNCTION__, $e->getCode(), $e->getMessage(), print_r($this->main_db->last_query(), TRUE)
+        "message" => '%s : %s : Transaction failed. Error no: %s, Error msg:%s', __CLASS__, __FUNCTION__, $e->getCode(), $e->getMessage()
       ];
-     } 
+    } 
   }
 
   function calc_nilai($tipe, $target, $target_val, $realisasi){
@@ -269,5 +277,48 @@ class kpi_model extends CI_Model {
       }
       return $nilai;
     }
+  }
+
+  public function submit_kpi($ind_user_id){
+    try {
+      $this->db->trans_start();
+      $message = ""; $ok = 1;
+      $outstanding = $this->db->query(
+                      "SELECT count(1) count 
+                      FROM indicator_user_detail 
+                      WHERE ind_user_id = ? AND (realisasi IS NULL OR realisasi = '') ", array($ind_user_id))->row();
+
+      $total_det = $this->db->query(
+                      "SELECT count(1) count 
+                      FROM indicator_user_detail 
+                      WHERE ind_user_id = ?", array($ind_user_id))->row();
+      
+      if($total_det->count==0){//update
+        $ok = 0; $message = "Gagal mengirimkan KPI.\\nKPI tidak memiliki detail. Silahkan tambahkan detail terlebih dahulu.";
+      }else if($outstanding->count>0){
+        $ok = 0; $message = "Gagal mengirimkan KPI.\\nAda nilai realisasi yang belum diisi.";
+      }else{
+        $this->db->query("UPDATE indicator_user
+                          SET status = 'Dikirimkan'
+                          WHERE ind_user_id = ?", array($ind_user_id));
+        $message = "KPI berhasil dikirimkan ke HROD untuk diperiksa."      ;
+      }
+      if($ok==1){
+        $this->db->trans_commit();
+      }else{
+        $this->db->trans_rollback();
+      }
+      $data = (object) [
+        "ok"      => $ok,
+        "message" => $message
+      ];
+      return $data;
+    }catch (Exception $e) {
+      $this->db->trans_rollback();
+      $data = (object) [
+        "ok"      => $ok,
+        "message" => '%s : %s : Transaction failed. Error no: %s, Error msg:%s', __CLASS__, __FUNCTION__, $e->getCode(), $e->getMessage()
+      ];
+    } 
   }
 }

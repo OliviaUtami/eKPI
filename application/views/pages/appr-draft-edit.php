@@ -134,14 +134,16 @@ $this->load->view('pages/_partials/header');
                   <div class="row">
                     <div class="form-group col-md-10">
                         <label>Catatan</label>
-                        <textarea class="form-control" id="note" name="note" autocomplete="off" <?php if($draft_data->status!=="Menunggu Persetujuan"){ echo "disabled"; } ?>><?php echo $draft_data->remarks; ?></textarea>
+                        <textarea class="form-control" id="note" name="note" autocomplete="off" <?php if($draft_data->status!=="Menunggu Persetujuan"){ echo "disabled"; } ?>><?php if($draft_data->remarks!=="null"){echo $draft_data->remarks;} ?></textarea>
                         
                     </div>
                   </div>
                 </div>
                 <div class="card-footer bg-whitesmoke">
+                <?php if($draft_data->status=="Menunggu Persetujuan"){  ?>
                   <button type="button" data-status="approve" class="btn btn-primary btn-process">Setuju</button>
                   <button type="button" data-status="reject" class="btn btn-danger btn-process">Tolak</button>
+                <?php  } ?>
                 </div>
               </div>
             </form>

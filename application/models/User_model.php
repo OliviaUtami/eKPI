@@ -5,10 +5,20 @@ class user_model extends CI_Model {
             FROM user u
             WHERE u.username = '$username' AND u.password='$password'";
     // echo("Hasil : ".$this->db->query($sql)->result());
-    return $this->db->query($sql)->result();
+    return $this->db->query($sql)->row();
   }
 
-  public function add_user($name, $address, $email, $username, $password, $org_id, $role_id, $created){
+  public function get_menu($org_id, $role_id){
+    $sql = "SELECT m.*  
+            FROM access_menu a
+            JOIN menu m ON a.menu_id = m.menu_id
+            WHERE org_id = ? AND role_id = ?
+            ORDER BY `order` ASC";
+    $menu = $this->db->query($sql, array($org_id, $role_id))->result();
+    return $menu;
+  }
+
+  public function add_user($name, $address, $email, $username, $password, $org_id, $role_id){
     $message = ""; $ok = 1;
     $exist = $this->db->query("SELECT COUNT(1) count FROM user WHERE username = ? and is_active = 1",array($username))->row();
 
@@ -18,7 +28,7 @@ class user_model extends CI_Model {
       $sql = "INSERT INTO user
             (name, address, email, username, password, org_id, role_id, is_active, created_by)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-      $this->db->query($sql, array($name, $address, $email, $username, $password, $org_id, $role_id, 1, $created));
+      $this->db->query($sql, array($name, $address, $email, $username, $password, $org_id, $role_id, 1, $_SESSION["username"]));
       $message = "User succesfully added";
     }
     $data = (object) [

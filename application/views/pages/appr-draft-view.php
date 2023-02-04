@@ -36,6 +36,7 @@ $this->load->view('pages/_partials/header');
                             <?php if($data->status=="Menunggu Persetujuan"){ ?>
                             <button class="btn btn-sm btn-success" onclick="editDraft(<?php echo $data->draft_id; ?>)" title="Cek Draft"><i class="fa fa-eye"></i></button>
                             <?php }else if($data->status=="Disetujui"){ ?>
+                            <button class="btn btn-sm btn-primary" onclick="editDraft(<?php echo $data->draft_id; ?>)" title="Cek Draft"><i class="fa fa-eye"></i></button>
                             <button class="btn btn-sm btn-danger" onclick="cancelApproval(<?php echo $data->draft_id; ?>)" title="Batalkan Persetujuan"><i class="fa fa-lock-open"></i></button>
                             <?php } ?>
                         </td>

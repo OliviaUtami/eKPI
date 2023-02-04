@@ -34,8 +34,14 @@ $this->load->view('pages/_partials/header');
                         <td><?php echo($data->approved_by."<br/>".$data->approved_at); ?></td>
                         <td>
                             <?php if($data->status=="Draft"||$data->status=="Menunggu Revisi"){ ?>
-                            <button class="btn btn-sm btn-warning" onclick="editDraft(<?php echo $data->draft_id; ?>)" title="Perbarui Draft"><i class="fa fa-edit"></i></button>
-                            <button class="btn btn-sm btn-success" onclick="reqApproval(<?php echo $data->draft_id; ?>)" title="Minta Persetujuan"><i class="fa fa-share"></i></button>
+                              <button class="btn btn-sm btn-warning" onclick="editDraft(<?php echo $data->draft_id; ?>)" title="Perbarui Draft"><i class="fa fa-edit"></i></button>
+                              <button class="btn btn-sm btn-success" onclick="reqApproval(<?php echo $data->draft_id; ?>)" title="Minta Persetujuan"><i class="fa fa-share"></i></button>
+                              <?php if($data->status=="Draft"){ ?>
+                                <button class="btn btn-sm btn-danger" onclick="deleteDraft(<?php echo $data->draft_id; ?>)" title="Hapus Draft"><i class="fa fa-times"></i></button>
+                              <?php } ?>
+                            <?php } ?>
+                            <?php if($data->status=="Menunggu Persetujuan"){ ?>
+                            <button class="btn btn-sm btn-primary" onclick="editDraft(<?php echo $data->draft_id; ?>)" title="Lihat Draft"><i class="fa fa-eye"></i></button>
                             <?php } ?>
                             <?php if($data->status=="Disetujui"){ ?>
                             <button class="btn btn-sm btn-primary" onclick="editDraft(<?php echo $data->draft_id; ?>)" title="Lihat Draft"><i class="fa fa-eye"></i></button>
@@ -71,7 +77,7 @@ $this->load->view('pages/_partials/header');
         $("#table-list").dataTable({
             "columnDefs": [
                 { width: 20, targets: 0 },
-                { width: 30, targets: -1 }
+                { width: 90, targets: -1 }
             ],
             "fixedColumns": true,
             "fnRowCallback": function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
@@ -97,5 +103,10 @@ $this->load->view('pages/_partials/header');
     function copyDraft(id){
       if(confirm("Salin draft ini?"))
         window.location.replace("draft/copy/"+id);
+    }
+
+    function deleteDraft(id){
+      if(confirm("Hapus draft ini ?"))
+        window.location.replace("draft/delete/"+id);
     }
 </script>

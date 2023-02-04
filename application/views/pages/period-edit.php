@@ -18,7 +18,13 @@ $this->load->view('pages/_partials/header');
               <div class="card">
                 <div class="card-body">
                   <div class="row">
-                    <div class="form-group col-md-5">
+                    <div class="form-group col-md-6">
+                      <div class="row">
+                        <div class="form-group col-md-12">
+                          <label>Nama Periode</label>
+                          <input class="form-control" name="name" id="name" autocomplete="off" value="<?php echo $perioddata->period_name; ?>" required/>
+                        </div>
+                      </div>
                       <div class="row">
                         <div class="form-group col-md-6">
                           <label>Periode Awal</label>

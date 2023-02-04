@@ -54,7 +54,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
           <div class="card-body">
             <table style="width:100%" id="divIsi" class="table table-striped table-md">
                 <tr>
-                  <td colspan="7"><b>KPI</b></td>
+                  <td colspan="7"><b><?php echo ($indicator->period_name); ?></b></td>
                 </tr>
                 <tr>
                   <td style="width: 90px;"><b>Periode </b></td>
@@ -290,6 +290,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
         for(var j=0; j<obj.pilihan.length; j++){
           htmlInp += `${(obj.pilihan[j].nilai==obj.realisasi?obj.pilihan[j].nama:"")}`;
         }
+        nilai = parseInt(obj.realisasi);
       }
       totalpersasaran+=nilai; count++;
       html += `<tr>

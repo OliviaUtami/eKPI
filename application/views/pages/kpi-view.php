@@ -32,9 +32,13 @@ $this->load->view('pages/_partials/header');
                         <td><?php echo($data->status); ?></td>
                         <td><?php echo($data->created_by."<br/>".$data->created_at); ?></td>
                         <td>
+                            <?php if($data->status=="Draft"){ ?>
                             <button class="btn btn-sm btn-warning" onclick="openKPI(<?php echo $data->indicator_id; ?>)" title="Isi KPI"><i class="fa fa-edit"></i></button>
-                            <?php if($data->indicator_id!==NULL&&$data->status=="Draft"){ ?>
-                            <button class="btn btn-sm btn-primary" onclick="publish(<?php echo $data->indicator_id; ?>)" title="Publikasi Indikator"><i class="fa fa-paper-plane"></i></button>
+                            <?php }else{ ?>
+                              <button class="btn btn-sm btn-primary" onclick="openKPI(<?php echo $data->indicator_id; ?>)" title="Lihat KPI"><i class="fa fa-eye"></i></button>
+                            <?php } ?>
+                            <?php if($data->ind_user_id!==NULL&&$data->ind_user_id!==-1&&($data->status=="Draft"||$data->status=="Menunggu Revisi")){ ?>
+                            <button class="btn btn-sm btn-primary" onclick="sendKPI(<?php echo $data->ind_user_id; ?>)" title="Kirimkan KPI"><i class="fa fa-paper-plane"></i></button>
                             <?php } ?>
                         </td>
                     </tr>
@@ -80,11 +84,11 @@ $this->load->view('pages/_partials/header');
         <?php } ?>
     });
 
-    function openKPI(draft_id){
-      window.location.replace("kpi/edit/"+draft_id);
+    function openKPI(indicator_id){
+      window.location.replace("kpi/edit/"+indicator_id);
     }
 
-    function publish(indicator_id){
-      
+    function sendKPI(indicator_id){
+      window.location.replace("kpi/submit/"+indicator_id);
     }
 </script>

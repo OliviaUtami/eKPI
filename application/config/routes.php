@@ -84,6 +84,8 @@ $route['draft/add/process']['post'] = 'pages/process_draft_add';
 $route['draft/edit/(:num)'] = 'pages/view_draft_edit/$1';
 $route['draft/edit/process']['post'] = 'pages/process_draft_edit';
 $route['draft/rfa/(:num)'] = 'pages/process_draft_rfa/$1';
+$route['draft/copy/(:num)'] = 'pages/process_draft_copy/$1';
+$route['draft/delete/(:num)'] = 'pages/process_draft_delete/$1';
 
 $route['draft-approval'] = 'pages/view_draft_approval_list';
 $route['draft-approval/edit/(:num)'] = 'pages/view_draft_approval_edit/$1';
@@ -96,13 +98,21 @@ $route['indicator/delete/(:num)'] = 'pages/process_indicator_delete/$1';
 //indicator
 $route['indicator'] = 'pages/view_indicator_list';
 $route['indicator/edit/(:num)'] = 'pages/view_indicator_edit/$1';
+$route['indicator/rfa/(:num)'] = 'pages/process_indicator_rfa/$1';
 $route['indicator/publish/(:num)'] = 'pages/publish_indicator/$1';
 $route['indicator/api/get_program']['post'] = 'pages/get_program_by_target';
 $route['indicator/api/save_indicator']['post'] = 'pages/process_indicator_add';
+
+$route['indicator-approval'] = 'pages/view_indicator_approval_list';
+$route['indicator-approval/edit/(:num)'] = 'pages/view_indicator_approval_edit/$1';
+$route['indicator-approval/edit/process']['post'] = 'pages/process_draft_approval_edit';
+$route['indicator-approval/cancel/(:num)'] = 'pages/cancel_draft_approval/$1';
 
 //kpi
 $route['kpi'] = 'pages/view_kpi_list';
 $route['kpi/edit/(:num)'] = 'pages/view_kpi_edit/$1';
 $route['kpi/api/get_indicator']['post'] = 'pages/get_indicator';
 $route['kpi/api/save_kpi']['post'] = 'pages/process_kpi_add';
+$route['kpi/submit/(:num)'] = 'pages/submit_kpi/$1';
+$route['kpi/print/(:num)'] = 'pages/print_kpi/$1';
 //$route['kpi/api/remove_doc']['post'] = 'pages/remove_doc';

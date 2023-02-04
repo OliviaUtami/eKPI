@@ -1,6 +1,7 @@
 <?php
 defined('BASEPATH') OR exit('No direct script access allowed');
 $this->load->view('pages/_partials/header');
+$disable_edit = array("Menunggu Persetujuan", "Disetujui");
 ?>
 <style>
   .date-input:read-only{
@@ -106,23 +107,22 @@ $this->load->view('pages/_partials/header');
                   <div class="row">
                     <div class="form-group col-md-5">
                         <label>Nama Draft</label>
-                        <input type="text" class="form-control" id="name" name="name" autocomplete="off" value="<?php echo $draft_data->nama; ?>" <?php if($draft_data->status=="Disetujui"){ echo "disabled"; } ?> required>
+                        <input type="text" class="form-control" id="name" name="name" autocomplete="off" value="<?php echo $draft_data->nama; ?>" <?php if(in_array($draft_data->status, $disable_edit)){ echo "disabled"; } ?> required>
                         <input type="hidden" class="form-control" id="id" name="id" autocomplete="off" value="<?php echo $draft_data->id; ?>" required>
 
                     </div>
                   </div>
                   <?php if($draft_data->remarks!==""){ ?>
                   <div class="row">
-                    <div class="form-group col-md-10">
+                    <div class="form-group col-md-10" <?php if($draft_data->status!=="Menunggu Revisi"){ echo "style=\"display: none\""; } ?>>
                         <label>Catatan</label>
-                        <textarea class="form-control" id="note" name="note" autocomplete="off" <?php if($draft_data->status!=="Menunggu Persetujuan"){ echo "disabled"; } ?>><?php echo $draft_data->remarks; ?></textarea>
-                        
+                        <textarea class="form-control" id="note" name="note" autocomplete="off" disabled><?php echo $draft_data->remarks; ?></textarea>
                     </div>
                   </div>
                   <?php } ?>
                   <div class="row">
                     <div class="form-group col-md-12">
-                      <?php if($draft_data->status!=="Disetujui"){ ?>
+                      <?php if(!in_array($draft_data->status, $disable_edit)){ ?>
                       <button type="button" class="btn btn-sm btn-primary" onclick="openModalMisi();"><i class="fa fa-plus"></i></button><br/><br/>
                       <?php } ?>
                       <table id="table-misi" class="table table-striped table-bordered" cellspacing="0" width="100%">
@@ -130,7 +130,7 @@ $this->load->view('pages/_partials/header');
                             <tr>
                                 <th style="width:30px">No</th>
                                 <th>Misi</th>
-                                <th style="width:120px">Action</th>
+                                <th style="width:140px">Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -142,7 +142,7 @@ $this->load->view('pages/_partials/header');
 
                 </div>
                 <div class="card-footer bg-whitesmoke">
-                  <?php if($draft_data->status!=="Disetujui"){ ?>
+                  <?php if(!in_array($draft_data->status, $disable_edit)){ ?>
                   <button type="button" id="btn-save" class="btn btn-primary">Simpan</button>
                   <?php } ?>
                 </div>
@@ -496,7 +496,7 @@ $this->load->view('pages/_partials/header');
                                     "<tr>"+
                                         "<th style='width:30px'>No</th>" +
                                         "<th>Program</th>" +
-                                        "<th style='width:90px'>Action</th>" +
+                                        "<th style='width:110px'>Action</th>" +
                                     "</tr>" +
                                 "</thead>" +
                                 "<tbody>" ;
@@ -505,7 +505,7 @@ $this->load->view('pages/_partials/header');
                             "<td>P" + s + "." + (l+1) + "</td>" +
                             "<td>" + program.nama + "</td>" +
                             "<td>" +
-                              <?php if($draft_data->status!=="Disetujui"){ ?>
+                              <?php if(!in_array($draft_data->status, $disable_edit)){ ?>
                               //"<button type='button' class='btn btn-sm btn-primary btn-add-program' title='Add Program' onclick='openModalProgram("+misi[i].tempid+","+tujuan.tempid+","+target.tempid+");'>&nbsp;<i class='fa fa-plus'></i>&nbsp;</button>" +
                               "<button type='button' class='btn btn-sm btn-warning btn-edit-purpose' title='Edit' onclick='openModalProgram("+misi[i].tempid+","+tujuan.tempid+","+target.tempid+","+program.tempid+");'>&nbsp;<i class='fa fa-edit'></i></button>" +
                               "<button type='button' class='btn btn-sm btn-danger btn-delete-purpose' title='Delete' onclick='deleteProgram("+misi[i].tempid+","+tujuan.tempid+","+target.tempid+","+program.tempid+");'>&nbsp;<i class='fa fa-times'></i>&nbsp;</button>" +
@@ -522,7 +522,7 @@ $this->load->view('pages/_partials/header');
                                 "<tr>"+
                                     "<th style='width:30px'>No</th>" +
                                     "<th>Sasaran</th>" +
-                                    "<th style='width:100px'>Action</th>" +
+                                    "<th style='width:120px'>Action</th>" +
                                 "</tr>" +
                             "</thead>" +
                             "<tbody>" ;
@@ -531,7 +531,7 @@ $this->load->view('pages/_partials/header');
                           "<td>S" + s + "</td>" +
                           "<td>" + target.nama + "</td>" +
                           "<td>" +
-                          <?php if($draft_data->status!=="Disetujui"){ ?>
+                          <?php if(!in_array($draft_data->status, $disable_edit)){ ?>
                             "<button type='button' class='btn btn-sm btn-primary btn-add-program' title='Tambah Program' onclick='openModalProgram("+misi[i].tempid+","+tujuan.tempid+","+target.tempid+");'>&nbsp;<i class='fa fa-plus'></i>&nbsp;</button>" +
                             "<button type='button' class='btn btn-sm btn-warning btn-edit-purpose' title='Edit' onclick='openModalTarget("+misi[i].tempid+","+tujuan.tempid+","+target.tempid+");'>&nbsp;<i class='fa fa-edit'></i></button>" +
                             "<button type='button' class='btn btn-sm btn-danger btn-delete-purpose' title='Delete' onclick='deleteTarget("+misi[i].tempid+","+tujuan.tempid+","+target.tempid+");'>&nbsp;<i class='fa fa-times'></i>&nbsp;</button>" +
@@ -552,7 +552,7 @@ $this->load->view('pages/_partials/header');
                               "<tr>"+
                                   "<th style='width:30px'>No</th>" +
                                   "<th>Tujuan</th>" +
-                                  "<th style='width:110px'>Action</th>" +
+                                  "<th style='width:130px'>Action</th>" +
                               "</tr>" +
                           "</thead>" +
                           "<tbody>" ;
@@ -561,7 +561,7 @@ $this->load->view('pages/_partials/header');
                           "<td>T" + t + "</td>" +
                           "<td>" + tujuan.nama + "</td>" +
                           "<td>" +
-                          <?php if($draft_data->status!=="Disetujui"){ ?>
+                          <?php if(!in_array($draft_data->status, $disable_edit)){ ?>
                             "<button type='button' class='btn btn-sm btn-primary btn-add-target' title='Tambah Tujuan' onclick='openModalTarget("+misi[i].tempid+","+tujuan.tempid+");'>&nbsp;<i class='fa fa-plus'></i>&nbsp;</button>" +
                             "<button type='button' class='btn btn-sm btn-warning btn-edit-purpose' title='Edit' onclick='openModalTujuan("+misi[i].tempid+","+tujuan.tempid+");'>&nbsp;<i class='fa fa-edit'></i></button>" +
                             "<button type='button' class='btn btn-sm btn-danger btn-delete-purpose' title='Delete' onclick='deleteTujuan("+misi[i].tempid+","+tujuan.tempid+");'>&nbsp;<i class='fa fa-times'></i>&nbsp;</button>" +
@@ -581,7 +581,7 @@ $this->load->view('pages/_partials/header');
                     "<td>M" + (i+1) + "</td>" +
                     "<td class='td-nama' data-tempid='"+misi[i].tempid+"'>" + (misi[i].nama) + "</td>" +
                     "<td>" +
-                    <?php if($draft_data->status!=="Disetujui"){ ?>
+                    <?php if(!in_array($draft_data->status, $disable_edit)){ ?>
                       "<button type='button' class='btn btn-sm btn-primary btn-add-tujuan' title='Tambah Misi' onclick='openModalTujuan("+misi[i].tempid+");'>&nbsp;<i class='fa fa-plus'></i>&nbsp;</button>" +
                       "<button type='button' class='btn btn-sm btn-warning btn-edit-misi' title='Edit' onclick='openModalMisi("+misi[i].tempid+");'>&nbsp;<i class='fa fa-edit'></i></button>" +
                       "<button type='button' class='btn btn-sm btn-danger btn-delete-misi' title='Delete' onclick='deleteMisi("+misi[i].tempid+");'>&nbsp;<i class='fa fa-times'></i>&nbsp;</button>" +

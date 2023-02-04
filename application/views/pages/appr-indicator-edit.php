@@ -179,9 +179,6 @@ $this->load->view('pages/_partials/header');
               <div class="form-group col-md-12">
                 <label>
                   <b>SASARAN STRATEGIS <?php echo substr($target->code,1)." : ".$target->nama; ?></b>
-                  <?php if($indicator->status!=="Disetujui"){ ?>
-                  <button type='button' class='btn btn-sm btn-primary' onclick="addIndikator(<?php echo $target->id; ?>);">&nbsp;<i class='fa fa-plus'></i>&nbsp;</button>
-                  <?php } ?>
                 </label>
               </div>
               <div class="col-md-12">
@@ -205,11 +202,17 @@ $this->load->view('pages/_partials/header');
             </div>
             <hr>
             <?php $i++; } ?>
+            <div class="row">
+              <div class="form-group col-md-10">
+                  <label>Catatan</label>
+                  <textarea class="form-control" id="note" name="note" autocomplete="off" <?php if($indicator->status!=="Menunggu Persetujuan"){ echo "disabled"; } ?>><?php echo $indicator->remarks; ?></textarea>
+                  
+              </div>
+            </div>
           </div>
           <div class="card-footer bg-whitesmoke">
-            <?php if($indicator->status!=="Disetujui"){ ?>
-            <button type="button" id="btn-save" class="btn btn-primary">Simpan</button>
-            <?php }?>
+            <button type="button" data-status="approve" class="btn btn-primary btn-process">Setuju</button>
+            <button type="button" data-status="reject" class="btn btn-danger btn-process">Tolak</button>
           </div>
         </div>
       </form>
@@ -425,10 +428,7 @@ $this->load->view('pages/_partials/header');
                     "<td>"+row.satuan+"</td>" +
                     "<td>"+row.target+"</td>" +
                     "<td>"+
-                      <?php if($indicator->status!=="Disetujui"){ ?>
-                      "<button type=\"button\" class=\"btn btn-sm btn-primary\" onclick=\"addIndikator("+row.target_id+","+row.tempid+")\"><i class=\"fa fa-edit\"></i></button>" +
-                      "<button type=\"button\" class=\"btn btn-sm btn-danger\" onclick=\"deleteIndikator("+row.target_id+","+row.tempid+")\"><i class=\"fa fa-times\"></i></button>" +
-                      <?php } ?>
+                      
                     "</td>" +
                   "</tr>";
           program_kode = row.program_kode;
@@ -494,24 +494,37 @@ $this->load->view('pages/_partials/header');
     }
   });
 
-  $(document).on("click","#btn-save",function(){
-    $.ajax({
-        url: '<?php echo base_url(); ?>indicator/api/save_indicator',
-        type: 'POST',
-        data: JSON.stringify({draft_id:$("#id").val(),indikator: indikator}),
-        dataType : "json",
-        contentType: "application/json; charset=utf-8",
-        success: function(data) {
-          console.log(data);
-          alert(data.message);
-          if(data.ok==1){
-            location.reload();
+  $(document).on("click",".btn-process",function(){
+    if(confirm(($(this).data("status")=="reject"?"Tolak":"Setujui")+" Indikator KPI ini ?")){
+      
+      if($(this).data("status")=="reject"&&$("#note").val().trim()==""){
+        alert("Catatan wajib diisi");
+        return;
+      }
+      
+      var param = {
+        id: $("#id").val().trim(),
+        action: $(this).data("status"),
+        remarks: $("#note").val().trim()
+      };
+      $.ajax({
+          url: 'process',
+          type: 'POST',
+          data: JSON.stringify(param),
+          dataType : "json",
+          contentType: "application/json; charset=utf-8",
+          success: function(data) {
+            if(data.ok==1){
+              window.location.replace("/eKPI/indicator-approval");
+            }else{
+              alert(data.msg);
+            }
+          },
+          error: function(data) {
+              console.log(data);
           }
-        },
-        error: function(data) {
-            console.log(data);
-        }
-    });
+      });
+    }
   });
 
   reloadTable();

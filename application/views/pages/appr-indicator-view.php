@@ -2,11 +2,7 @@
 defined('BASEPATH') OR exit('No direct script access allowed');
 $this->load->view('pages/_partials/header');
 ?>
-<style>
-  td{
-    word-wrap: break-word;
-  }
-</style>
+
 <!-- Main Content -->
 <div class="main-content">
   <section class="section">
@@ -16,29 +12,27 @@ $this->load->view('pages/_partials/header');
     <div class="section-body">
       <div class="card">
         <div class="card-body">
-        <button class="btn btn-sm btn-primary" onclick="window.location.replace('period/add')">Tambah Baru</button><br><br>
-
         <table id="table-list" class="table table-striped table-bordered" cellspacing="0" width="100%">
             <thead>
                 <tr>
                     <th>No</th>
-                    <th>Periode</th>
-                    <th>Nama Periode</th>
-                    <th>Draft KPI</th>
+                    <th>Periode Pengisian</th>
                     <th>Status</th>
+                    <th>Dibuat Oleh</th>
                     <th>Tindakan</th>
                 </tr>
             </thead>
             <tbody>
-                <?php foreach ($period_data as $period){ ?>
+                <?php foreach ($periods as $data){ ?>
                     <tr>
                         <td></td>
-                        <td><?php echo($period->period_from." - ".$period->period_to); ?></td>
-                        <td><?php echo($period->period_name); ?></td>
-                        <td><?php echo($period->draft); ?></td>
-                        <td><?php echo($period->status); ?></td>
+                        <td><?php echo($data->period_from." - ".$data->period_to); ?></td>
+                        <td><?php echo($data->status); ?></td>
+                        <td><?php echo($data->created_by."<br/>".$data->created_at); ?></td>
                         <td>
-                            <button class="btn btn-sm btn-warning" onclick="editPeriod(<?php echo $period->period_id; ?>)" title="Ubah Periode"><i class="fa fa-edit"></i></button>
+                            <?php if($data->status=="Menunggu Persetujuan"||$data->status=="Disetujui"){ ?>
+                            <button class="btn btn-sm btn-primary" onclick="editIndicator(<?php echo $data->draft_id; ?>)" title="Indikator KPI"><i class="fa fa-eye"></i></button>
+                            <?php } ?>
                         </td>
                     </tr>
                 <?php } ?>
@@ -69,9 +63,7 @@ $this->load->view('pages/_partials/header');
         $("#table-list").dataTable({
             "columnDefs": [
                 { width: 20, targets: 0 },
-                { width: 120, targets: 1 },
-                { width: 150, targets: 2 },
-                { width: 20, targets: -1 }
+                { width: 30, targets: -1 }
             ],
             "fixedColumns": true,
             "fnRowCallback": function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
@@ -84,4 +76,13 @@ $this->load->view('pages/_partials/header');
           alert("<?php echo $this->session->flashdata('message'); ?>");
         <?php } ?>
     });
+
+    function editIndicator(id){
+      window.location.replace("indicator-approval/edit/"+id);
+    }
+
+    function cancelAppr(id){
+      if(confirm("Ajukan indikator kinerja program KPI ke WR agar bisa digunakan tim dalam pengisian KPI ?\n"))
+        window.location.replace("indicator/rfa/"+indicator_id);
+    }
 </script>

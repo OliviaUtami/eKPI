@@ -13,7 +13,8 @@ class indicator_model extends CI_Model {
   public function get_indicator_by_draft_org($draft_id, $org_id){
     $sql = "SELECT 
               p.period_id, DATE_FORMAT(period_from, '%d/%m/%Y') period_from, DATE_FORMAT(period_to, '%d/%m/%Y') period_to, 
-              p.draft_id, i.indicator_id, i.org_id, coalesce(i.status,'Belum Ada') status, i.created_by, DATE_FORMAT(i.created_at, '%d/%m/%Y %H:%i:%s') created_at
+              p.draft_id, i.indicator_id, i.org_id, coalesce(i.status,'Belum Ada') status, i.created_by, DATE_FORMAT(i.created_at, '%d/%m/%Y %H:%i:%s') created_at,
+              i.remarks
             FROM period p 
             LEFT JOIN indicator i ON p.draft_id = i.draft_id AND i.org_id = ?
             WHERE DATE(SYSDATE()) BETWEEN p.period_from AND p.period_to AND p.status = 'Aktif' AND p.draft_id = ? ";
@@ -303,6 +304,39 @@ class indicator_model extends CI_Model {
     return $data;
   }
 
+  public function rfa_indicator($indicator_id){
+    $message = ""; $ok = 1;
+    $res = $this->db->query("SELECT status FROM indicator WHERE indicator_id = ?",array($indicator_id))->row();
+    if($res->status=="Draft"||$res->status=="DRAFT"){
+      $sql = "UPDATE indicator 
+                SET
+                  updated_by = ?,
+                  updated_at = now(),
+                  status = ?
+              WHERE indicator_id = ?";
+      $this->db->query($sql, array($_SESSION["username"], "Menunggu Persetujuan", $indicator_id));
+    }else{
+      $message = "Gagal melakukan pengajuan. Status draft adalah".$res->status."";
+    }
+    $data = (object) [
+			"ok"      => $ok,
+      "message" => $message
+    ];
+    return $data;
+  }
+
+  public function get_indicator_approval(){
+    $sql = "SELECT 
+            indicator_id, i.draft_id, org_id, i.status, DATE_FORMAT(i.created_at, '%d/%m/%Y %H:%i:%s') created_at, i.created_by, 
+            DATE_FORMAT(i.approved_at, '%d/%m/%Y %H:%i:%s') approved_at, i.approved_by, 
+            p.name period_name, DATE_FORMAT(p.period_from, '%d/%m/%Y') period_from, DATE_FORMAT(p.period_to, '%d/%m/%Y') period_to
+          FROM indicator i
+          JOIN period p on i.draft_id = p.draft_id
+          WHERE p.status = 'Aktif' and i.status IN ('Menunggu Persetujuan','Disetujui')
+          ORDER BY indicator_id DESC";
+    return $this->db->query($sql)->result();
+  }
+
   public function publish_indicator($indicator_id){
     $message = ""; $ok = 1;
     $res = $this->db->query("SELECT status FROM indicator WHERE indicator_id = ?",array($indicator_id))->row();
@@ -313,9 +347,9 @@ class indicator_model extends CI_Model {
                   updated_at = now(),
                   status = ?
               WHERE indicator_id = ?";
-      $this->db->query($sql, array($_SESSION["username"], "Dipublikasi", $indicator_id));
+      $this->db->query($sql, array($_SESSION["username"], "Disetujui", $indicator_id));
     }else{
-      $message = "Gagal dipublikasi. Status Indikator Program ".$res->status."";
+      $message = "Gagal Disetujui. Status Indikator Program ".$res->status."";
     }
     $data = (object) [
 			"ok"      => $ok,

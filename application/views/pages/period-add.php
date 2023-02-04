@@ -18,7 +18,13 @@ $this->load->view('pages/_partials/header');
               <div class="card">
                 <div class="card-body">
                   <div class="row">
-                    <div class="form-group col-md-5">
+                    <div class="form-group col-md-6">
+                      <div class="row">
+                        <div class="form-group col-md-12">
+                          <label>Nama Periode</label>
+                          <input class="form-control" name="name" id="name" autocomplete="off" required/>
+                        </div>
+                      </div>
                       <div class="row">
                         <div class="form-group col-md-6">
                           <label>Periode Awal</label>
@@ -103,19 +109,9 @@ $this->load->view('pages/_partials/header');
 				address: "required",
 			},
 			messages: {
-				name: "Please enter a name",
-        email: "Please enter a valid email address",
-        organization: "Please select an organization",
-        role: "Please enter a role",
-				username: {
-					required: "Please enter a username",
-					minlength: "Username must consist of at least 3 characters"
-				},
-				password: {
-					required: "Please provide a password",
-					minlength: "Password must be at least 8 characters long"
-				},
-				address: "Please enter an address",
+				name: "Silahkan isi nama periode",
+        period_from: "Silahkan isi tanggal awal periode",
+        period_to: "Silahkan isi tanggal akhir periode"
 			},
       errorPlacement: function(error, element) {
         element.closest(".form-group").append(error);

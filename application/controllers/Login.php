@@ -10,37 +10,30 @@ class Login extends CI_Controller {
     $password = md5($_POST['password']);
 
     $tampung = $this->user_model->query_check_login($username,$password);
+    $menu = $this->user_model->get_menu($tampung->org_id, $tampung->role_id);
     // echo("Username : ".$username." Password : ".$password);
     // print_r($tampung); die();
     $user = "";
     $role = "";
-    foreach ($tampung as $value) {
-      // echo $value->user_id."<br>";
-      // echo $value->username."<br>";
-      // echo $value->role_id;
-      $user_id    = $value->user_id;
-      $username   = $value->username;
-      $role_id    = $value->role_id;
-      $org_id     = $value->org_id;
-    }
-    if(count($tampung)>0){
+    
+    if($tampung !== null){
+      $user_id    = $tampung->user_id;
+      $username   = $tampung->username;
+      $role_id    = $tampung->role_id;
+      $org_id     = $tampung->org_id;
       $newdata = array(
               'user_id'  => $user_id,
               'username'  => $username,
               'role_id' => $role_id,
-              'org_id' => $org_id
+              'org_id' => $org_id,
+              'logged_in_at' => time(),
+              'menu' => $menu
       );
       $this->session->set_userdata($newdata);
       redirect('/', 'refresh');
     } else {
       redirect('/dist/auth_login', 'refresh');
     }
-    // echo(count($tampung));
-    // $this->load->view('HomeView',$data);
-		// $data = array(
-		// 	'title' => "Login"
-		// );
-		// $this->load->view('dist/auth-login', $data);
 	}
 
   public function session_logout() {

@@ -3,6 +3,9 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 $this->load->view('pages/_partials/header');
 ?>
 <style>
+  table tbody td{
+    word-wrap:break-word;
+  }
   .date-input:read-only{
     background-color: #fdfdff;
   }
@@ -86,6 +89,7 @@ $this->load->view('pages/_partials/header');
       </hr>
       <div class="modal-body">
         <div class="row">
+          <?php if($indicator->status=="Draft"||$indicator->status=="Menunggu Revisi"){ ?>
           <div class="col-md-10">
             <input type="file" class="form-control file" id="inp-file" multiple/>
             <input type="hidden" class="form-control" id="inp-detid" readonly/>
@@ -93,14 +97,15 @@ $this->load->view('pages/_partials/header');
           <div class="col-md-2">
             <button type="button" class="btn btn-sm btn-primary btn-upload" style="top: 5px;position: relative;">Unggah</button>
           </div>
+          <?php } ?>
         </div>
         <div class="row">
           <div class="col-md-12">
-            <table style="width:100%" id="table-document" class="table table-striped table-md">
+            <table style="width:100%; table-layout: fixed;" id="table-document" class="table table-striped table-md">
               <thead>
                 <tr>
-                  <th>No</th>
-                  <th>Nama Dokumen</th>
+                  <th style="width:5%">No</th>
+                  <th style="width:75%">Nama Dokumen</th>
                   <th>Aksi</th>
                 </tr>
               </thead>
@@ -131,6 +136,7 @@ $this->load->view('pages/_partials/header');
                   <input type="hidden" class="form-control" id="id" name="id" autocomplete="off" value="<?php echo $indicator->indicator_id; ?>" required>
               </div>
             </div>
+            <?php if($indicator->status=="Draft"||$indicator->status=="Menunggu Revisi"){ ?>
             <div class="row">
               <div class="form-group col-md-8">
                 <input type="text" class="form-control" id="cboIndicator"/>
@@ -145,13 +151,15 @@ $this->load->view('pages/_partials/header');
               </div>
             </div>
             <hr/>
+            <?php } ?>
             <div id="divIsi">
               
             </div>
           </div>
           <div class="card-footer bg-whitesmoke">
-            
-            <button type="button" id="btn-save" class="btn btn-primary">Simpan</button>
+            <?php if($indicator->status=="Draft"||$indicator->status=="Menunggu Revisi"){ ?>
+              <button type="button" id="btn-save" class="btn btn-primary">Simpan</button>
+            <?php } ?>
           </div>
         </div>
       </form>
@@ -297,25 +305,40 @@ $this->load->view('pages/_partials/header');
       }
       var input_type = "number"; var htmlInp = ""; var nilai = 0;
       if(obj.tipe_indikator=="Persentase"||obj.tipe_indikator=="Batas Persentase"){
-        htmlInp += `<input type="text" class="form-control percentage inpReal smallInput" autocomplete="off" data-detid="${obj.ind_det_id}" value="${obj.realisasi??""}"/>`;
-        if(obj.tipe_indikator=="Persentase"&&obj.realisasi!==null){
-          nilai = Math.round(parseInt(obj.realisasi)/parseInt(obj.target_indikator_value)*100*100)/100;
-        }else if(obj.tipe_indikator=="Batas Persentase"&&obj.realisasi!==null){
-          nilai = Math.round((parseInt(obj.target_indikator_value)-parseInt(obj.realisasi))/parseInt(obj.target)*100*100)/100;
-        }
+          <?php if($indicator->status=="Draft"||$indicator->status=="Menunggu Revisi"){ ?>
+            htmlInp += `<input type="text" class="form-control percentage inpReal smallInput" autocomplete="off" data-detid="${obj.ind_det_id}" value="${obj.realisasi??""}"/>`;
+          <?php }else{ ?>
+            htmlInp += `<span style="text-align:center;">${obj.realisasi??""}</span>`;
+          <?php } ?>
+
+          if(obj.tipe_indikator=="Persentase"&&obj.realisasi!==null&&obj.realisasi!==""){
+            nilai = Math.round(parseInt(obj.realisasi)/parseInt(obj.target_indikator_value)*100*100)/100;
+          }else if(obj.tipe_indikator=="Batas Persentase"&&obj.realisasi!==null&&obj.realisasi!==""){
+            nilai = Math.round((parseInt(obj.target_indikator_value)-parseInt(obj.realisasi))/parseInt(obj.target)*100*100)/100;
+          }
       }else if(obj.tipe_indikator=="Angka"||obj.tipe_indikator=="Batas Angka"){
-        htmlInp += `<input type="text" class="form-control number inpReal smallInput" autocomplete="off" data-detid="${obj.ind_det_id}" value="${obj.realisasi??""}"/>`;
-        if(obj.tipe_indikator=="Angka"&&obj.realisasi!==null){
+        <?php if($indicator->status=="Draft"||$indicator->status=="Menunggu Revisi"){ ?>
+          htmlInp += `<input type="text" class="form-control number inpReal smallInput" autocomplete="off" data-detid="${obj.ind_det_id}" value="${obj.realisasi??""}"/>`;
+        <?php }else{ ?>
+          htmlInp += `<span style="text-align:center;">${obj.realisasi??""}</span>`;
+        <?php } ?>
+
+        if(obj.tipe_indikator=="Angka"&&obj.realisasi!==null&&obj.realisasi!==""){
           nilai = Math.round(parseInt(obj.realisasi)/parseInt(obj.target_indikator_value)*100*100)/100;
-        }else if(obj.tipe_indikator=="Angka"&&obj.realisasi!==null){
+        }else if(obj.tipe_indikator=="Angka"&&obj.realisasi!==null&&obj.realisasi!==""){
           nilai = Math.round((parseInt(obj.target_indikator_value)-parseInt(obj.realisasi))/parseInt(obj.target_indikator_value)*100*100)/100;
         }
       }else{
-        htmlInp += `<select class="form-control inpReal smallSelect" data-detid="${obj.ind_det_id}">`;
-        for(var j=0; j<obj.pilihan.length; j++){
-          htmlInp += `<option value="${obj.pilihan[j].nilai}" ${(obj.pilihan[j].nilai==obj.realisasi?"selected":"")}>${obj.pilihan[j].nama}</option>`;
-        }
-        htmlInp += `</select>`;
+        <?php if($indicator->status=="Draft"||$indicator->status=="Menunggu Revisi"){ ?>
+          htmlInp += `<select class="form-control inpReal smallSelect" data-detid="${obj.ind_det_id}">`;
+          for(var j=0; j<obj.pilihan.length; j++){
+            htmlInp += `<option value="${obj.pilihan[j].nilai}" ${(obj.pilihan[j].nilai==obj.realisasi?"selected":"")}>${obj.pilihan[j].nama}</option>`;
+          }
+          htmlInp += `</select>`;
+        <?php }else{ ?>
+          var selected = obj.pilihan.find(item=>item.nilai==obj.realisasi);
+          htmlInp += `<span style="text-align:center;">${selected.nama??""}</span>`;
+        <?php } ?>
         if(obj.realisasi!==null){
           nilai = parseInt(obj.realisasi);
         }
@@ -329,7 +352,11 @@ $this->load->view('pages/_partials/header');
                   <td class="center">${obj.target_indikator}</td>
                   <td class="center"><span class="spanNilai">${nilai}</span></td>
                   <td><span>${obj.dokumen.length}</span><button type="button" data-detid="${obj.ind_det_id}" class="btn btn-icon btn-sm btn-secondary btn-document" style="float: right" onclick="return false;"><i class="fa fa-search"></i></button></td>
-                  <td><button type="button" data-detid="${obj.ind_det_id}" class="btn btn-icon btn-sm btn-danger btn-remove-indicator"><i class="fa fa-times"></i></button></td>
+                  <td>
+                    <?php if($indicator->status=="Draft"||$indicator->status=="Menunggu Revisi"){ ?>
+                    <button type="button" data-detid="${obj.ind_det_id}" class="btn btn-icon btn-sm btn-danger btn-remove-indicator"><i class="fa fa-times"></i></button>
+                    <?php } ?>
+                  </td>
                </tr>`;
       if(i==indikator.length-1||indikator[i+1].kode_sasaran!==obj.kode_sasaran){  
         countsasaran++;
@@ -455,9 +482,11 @@ $this->load->view('pages/_partials/header');
                       <i class="fa fa-download"></i>
                     </a>`;
       }
-        html+=      `<button type="button" data-idx="${i}" data-detid="${ind_det_id}" class="btn btn-icon btn-sm btn-danger btn-remove-doc">
+        html+=      `<?php if($indicator->status=="Draft"||$indicator->status=="Menunggu Revisi"){ ?>
+                    <button type="button" data-idx="${i}" data-detid="${ind_det_id}" class="btn btn-icon btn-sm btn-danger btn-remove-doc">
                       <i class="fa fa-times"></i>
                     </button>
+                    <?php } ?>
                   </td>
               </tr>`;
     }
@@ -477,7 +506,7 @@ $this->load->view('pages/_partials/header');
       reloadTable();
     }
   });
-  
+  <?php if($indicator->status=="Draft"||$indicator->status=="Menunggu Revisi"){ ?>
   $(document).on("click", "#btn-save", function(){
     $.ajax({
         url: '<?php echo base_url(); ?>kpi/api/save_kpi',
@@ -500,6 +529,7 @@ $this->load->view('pages/_partials/header');
         }
     });
   });
+  <?php } ?>
 
   function toBase64(file){
     console.log("toBase64 called");

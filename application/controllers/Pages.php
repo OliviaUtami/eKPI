@@ -265,11 +265,12 @@ class Pages extends CI_Controller {
 
 		$period_from= $_POST['period_from'];
 		$period_to 	= $_POST['period_to'];
+		$name 	= $_POST['name'];
 		$status 	= $_POST['status'];
 		$draft 	= $_POST['draft'];
 		$created    = $_SESSION['username'];
 
-		$data = $this->period_model->add_period($period_from, $period_to, $status, $created, $draft);
+		$data = $this->period_model->add_period($period_from, $period_to, $name, $status, $created, $draft);
 		$this->session->set_flashdata('message', $data->message);
 		if($data->ok == 1){
 			redirect('/period');
@@ -285,7 +286,7 @@ class Pages extends CI_Controller {
 		$this->load->model('draft_model');
 		$drafts = $this->draft_model->get_approved_draft();
 		$data = array(
-			"title" 		=> "Edit Period",
+			"title" 		=> "Edit Periode",
 			"menu"			=> "period",
 			"perioddata"	=> $perioddata,
 			"draft_data"	=> $drafts
@@ -300,10 +301,11 @@ class Pages extends CI_Controller {
 		$period_id 	= $_POST['id'];
 		$period_from= $_POST['period_from'];
 		$period_to 	= $_POST['period_to'];
+		$name 		= $_POST['name'];
 		$draft 		= $_POST['draft'];
 		$status 	= $_POST['status'];
 
-		$data = $this->period_model->edit_period($period_id,$period_from, $period_to, $status, $draft);
+		$data = $this->period_model->edit_period($period_id, $period_from, $period_to, $name, $status, $draft);
 		$this->session->set_flashdata('message', $data->message);
 		if($data->ok == 1){
 			redirect('/period');
@@ -359,7 +361,7 @@ class Pages extends CI_Controller {
 		$draft_data = $this->draft_model->get_draft_by_id($draft_id);
 
 		$data = array(
-			"title" 		=> "Daftar Draft",
+			"title" 		=> "Edit Draft",
 			"menu"			=> "draft",
 			"draft_data"	=> $draft_data
 		);
@@ -378,9 +380,16 @@ class Pages extends CI_Controller {
 		$missions = $obj->details;
 		$data = $this->draft_model->edit_draft($draft_id, $draft_name, $missions);
 		echo json_encode($data);
-		//var_dump($test);
-		//exit();
 	}
+
+	public function process_draft_delete($id){
+		$this->check_login();
+		$this->load->model('draft_model');
+		$data = $this->draft_model->delete_draft($id);
+		$this->session->set_flashdata('message', $data->message);
+		redirect('/draft');
+	}
+
 	public function process_draft_rfa($id){
 		$this->check_login();
 		$this->load->model('draft_model');
@@ -388,6 +397,15 @@ class Pages extends CI_Controller {
 		$data = $this->draft_model->rfa_draft($id);
 		$this->session->set_flashdata('message', $data->message);
 		//var_dump($data);
+		redirect('/draft');
+	}
+
+	public function process_draft_copy($id){
+		$this->check_login();
+		$this->load->model('draft_model');
+		
+		$data = $this->draft_model->copy_draft($id);
+		$this->session->set_flashdata('message', $data->message);
 		redirect('/draft');
 	}
 
@@ -510,6 +528,45 @@ class Pages extends CI_Controller {
 		//exit();
 	}
 
+	public function process_indicator_rfa($id){
+		$this->check_login();
+		$this->load->model('indicator_model');
+		
+		$data = $this->indicator_model->rfa_indicator($id);
+		$this->session->set_flashdata('message', $data->message);
+		//var_dump($data);
+		redirect('/indicator');
+	}
+
+	public function view_indicator_approval_list() {
+		$this->check_login();
+		$this->load->model('indicator_model');
+		
+		$periods = $this->indicator_model->get_indicator_approval();
+		//var_dump($drafts);
+		$data = array(
+			"title" 		=> "Daftar Pengajuan Indikator KPI",
+			"menu"			=> "indicator-approval",
+			"periods"		=> $periods
+		);
+		$this->load->view('pages/appr-indicator-view', $data);
+	}
+
+	public function view_indicator_approval_edit($draft_id) {
+		$this->check_login();
+		$this->load->model('user_model');
+		$this->load->model('indicator_model');
+		$user = $this->user_model->get_user_by_username($_SESSION["username"]);
+		$indicator = $this->indicator_model->get_indicator_by_draft_org($draft_id,$user->org_id);
+		//var_dump($indicator);
+		$data = array(
+			"title" 		=> "Manajemen Indikator (".$user->org_name.")",
+			"menu"			=> "indicator",
+			"indicator"		=> $indicator
+		);
+		$this->load->view('pages/appr-indicator-edit', $data);
+	}
+
 	public function publish_indicator($id){
 		$this->check_login();
 		$this->load->model('indicator_model');
@@ -581,6 +638,31 @@ class Pages extends CI_Controller {
 		$data = $this->kpi_model->add_kpi($user,$obj);
 		echo json_encode($data);
 		//exit();
+	}
+
+	public function submit_kpi($id){
+		$this->check_login();
+		$this->load->model('kpi_model');
+		
+		$data = $this->kpi_model->submit_kpi($id);
+		$this->session->set_flashdata('message', $data->message);
+		//echo $data->message;
+		redirect('/kpi');
+	}
+
+	public function print_kpi($indicator_id) {
+		$this->check_login();
+		$this->load->model('user_model');
+		$this->load->model('kpi_model');
+		$user = $this->user_model->get_user_by_username($_SESSION["username"]);
+		$indicator = $this->kpi_model->get_kpi_indicator($indicator_id,$user);
+		//var_dump(json_encode($indicator));
+		$data = array(
+			"title" 		=> "KPI Saya",
+			"menu"			=> "kpi",
+			"indicator"		=> $indicator
+		);
+		$this->load->view('pages/kpi-print', $data);
 	}
 	/** PAGE KPI - END */
 }

@@ -34,9 +34,9 @@ $this->load->view('pages/_partials/header');
                             <button class="btn btn-sm btn-warning" onclick="manageIndicators(<?php echo $data->draft_id; ?>)" title="Indikator KPI"><i class="fa fa-edit"></i></button>
                             <?php } ?>
                             <?php if($data->indicator_id!==NULL&&$data->status=="Draft"){ ?>
-                            <button class="btn btn-sm btn-primary" onclick="publish(<?php echo $data->indicator_id; ?>)" title="Publikasi Indikator"><i class="fa fa-paper-plane"></i></button>
+                            <button class="btn btn-sm btn-primary" onclick="reqAppr(<?php echo $data->indicator_id; ?>)" title="Ajukan Indikator"><i class="fa fa-paper-plane"></i></button>
                             <?php } ?>
-                            <?php if($data->status=="Dipublikasi"){ ?>
+                            <?php if($data->status=="Menunggu Persetujuan"||$data->status=="Disetujui"){ ?>
                             <button class="btn btn-sm btn-primary" onclick="manageIndicators(<?php echo $data->draft_id; ?>)" title="Indikator KPI"><i class="fa fa-eye"></i></button>
                             <?php } ?>
                         </td>
@@ -87,8 +87,8 @@ $this->load->view('pages/_partials/header');
       window.location.replace("indicator/edit/"+draft_id);
     }
 
-    function publish(indicator_id){
-      if(confirm("Publikasi indikator program agar bisa digunakan tim dalam pengisian KPI ?"))
-        window.location.replace("indicator/publish/"+indicator_id);
+    function reqAppr(indicator_id){
+      if(confirm("Ajukan indikator kinerja program KPI ke WR agar bisa digunakan tim dalam pengisian KPI ?\n"))
+        window.location.replace("indicator/rfa/"+indicator_id);
     }
 </script>

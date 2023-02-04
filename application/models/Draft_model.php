@@ -5,6 +5,7 @@ class draft_model extends CI_Model {
               draft_id, name, status, DATE_FORMAT(created_at, '%d/%m/%Y %H:%i:%s') created_at, created_by, 
               DATE_FORMAT(approved_at, '%d/%m/%Y %H:%i:%s') approved_at, approved_by
             FROM `draft` 
+            WHERE deleted = 0
             ORDER BY draft_id DESC;";
     return $this->db->query($sql)->result();
   }
@@ -14,7 +15,7 @@ class draft_model extends CI_Model {
               draft_id id, name nama, status, DATE_FORMAT(created_at, '%d/%m/%Y %H:%i:%s') created_at, created_by, 
               DATE_FORMAT(approved_at, '%d/%m/%Y %H:%i:%s') approved_at, approved_by, remarks
             FROM `draft` 
-            WHERE draft_id = ? ";
+            WHERE draft_id = ? AND deleted = 0";
     $data = $this->db->query($sql,array($draft_id))->row();
     
     $sqlMisi = "SELECT 
@@ -70,7 +71,7 @@ class draft_model extends CI_Model {
               draft_id id, name nama, status, DATE_FORMAT(created_at, '%d/%m/%Y %H:%i:%s') created_at, created_by, 
               DATE_FORMAT(approved_at, '%d/%m/%Y %H:%i:%s') approved_at, approved_by, remarks
             FROM `draft` 
-            WHERE status = 'Disetujui' ";
+            WHERE status = 'Disetujui' and deleted = 0";
     $data = $this->db->query($sql)->result();
     
     return $data;
@@ -78,13 +79,11 @@ class draft_model extends CI_Model {
 
   public function add_draft($draft_name, $arrmission){
     $message = ""; $ok = 1;
-    //$exist = $this->db->query("SELECT COUNT(1) count FROM period WHERE period_from = ? and is_active = 1",array($username))->row();
-    //if((int) $exist->count > 0){
     if(1==0){
       $message = "User with same user name exists";
     }else{
       $sql = "INSERT INTO draft 
-                (code, name, created_by, status)
+                (name, created_by, status)
               VALUES (?, ?, ?)";
       $this->db->query($sql, array($draft_name, $_SESSION["username"], 'Draft'));
       $draft_id = $this->db->insert_id();
@@ -113,7 +112,7 @@ class draft_model extends CI_Model {
             for ($l=0; $l < count($arrprogram); $l++) { 
               $sql = "INSERT INTO program 
                         (target_id, code, name, created_by, status)
-                      VALUES (?, ?, ?, ?)";
+                      VALUES (?, ?, ?, ?, ?)";
               $this->db->query($sql, array($target_id, "P".$s.".".($l+1), $arrprogram[$k]->nama, $_SESSION["username"], 'Draft'));
             }
             $s++;
@@ -121,7 +120,7 @@ class draft_model extends CI_Model {
           $t++;
         }
       }
-      $message = "Draft berhasil ditambbahkan";
+      $message = "Draft berhasil ditambahkan";
     }
     $data = (object) [
 			"ok"      => $ok,
@@ -188,6 +187,42 @@ class draft_model extends CI_Model {
       "message" => $message
     ];
     return $data;
+  }
+
+  public function delete_draft($draft_id){
+    try {
+      $message = ""; $ok = 1;
+      $used = $this->db->query("SELECT COUNT(1) count FROM period WHERE status IN  ('Aktif','Dikunci') and draft_id = ?",array($draft_id))->row();
+      if($used !== null && $used->count> 0){
+        $message = "Gagal menghapus draft, draft sudah digunakan pada salah satu periode";
+        $ok = 0;
+      }else{
+        $sql = "UPDATE draft 
+                SET
+                  deleted = 1,
+                  deleted_by = ?,
+                  deleted_at = now()
+                WHERE draft_id = ?";
+        $this->db->query($sql, array($_SESSION["username"], $draft_id));
+        $message = "Draft berhasil dihapus";
+      }
+      if($ok==1){
+        $this->db->trans_commit();
+      }else{
+        $this->db->trans_rollback();
+      }
+      $data = (object) [
+        "ok"      => $ok,
+        "message" => $message
+      ];
+      return $data;
+    }catch (Exception $e) {
+      $this->db->trans_rollback();
+      $data = (object) [
+        "ok"      => $ok,
+        "message" => '%s : %s : Transaction failed. Error no: %s, Error msg:%s', __CLASS__, __FUNCTION__, $e->getCode(), $e->getMessage()
+      ];
+    } 
   }
 
   public function rfa_draft($draft_id){
@@ -288,5 +323,74 @@ class draft_model extends CI_Model {
       "message" => $message
     ];
     return $data;
+  }
+
+  public function copy_draft($draft_id){
+    try{
+      $message = ""; $ok = 1;
+      
+      $sql = "INSERT INTO draft 
+                (name, created_by, status)
+              SELECT CONCAT(name, ' (Copy ', DATE_FORMAT(now(), '%d/%m/%Y %H:%i:%s'), ')' ), ?, ? FROM draft WHERE draft_id = ? AND deleted = 0";
+      $this->db->query($sql, array($_SESSION["username"], 'Draft', $draft_id));
+      $new_draft_id = $this->db->insert_id();
+      
+      $sql = "SELECT mission_id, code, name FROM mission WHERE draft_id = ? ORDER BY code ASC ";
+      $cpMission = $this->db->query($sql, array($draft_id))->result();
+      
+      foreach($cpMission as $mission){
+        $sql = "INSERT INTO mission 
+                  (draft_id, code, name, created_by, status)
+                VALUES (?, ?, ?, ?, ?)";
+        $this->db->query($sql, array($new_draft_id, $mission->code, $mission->name, $_SESSION["username"], 'Draft'));
+        $new_mission_id = $this->db->insert_id();
+
+        $sql = "SELECT purpose_id, code, name FROM purpose WHERE mission_id = ? ORDER BY code ASC ";
+        $cpPurpose = $this->db->query($sql, array($mission->mission_id))->result();
+        
+        foreach($cpPurpose as $purpose){
+          $sql = "INSERT INTO purpose 
+                    (mission_id, code, name, created_by, status)
+                  VALUES (?, ?, ?, ?, ?)";
+          $this->db->query($sql, array($new_mission_id, $purpose->code, $purpose->name, $_SESSION["username"], 'Draft'));
+          $new_purpose_id = $this->db->insert_id();
+
+          $sql = "SELECT target_id, code, name FROM target WHERE purpose_id = ? ORDER BY code ASC ";
+          $cpTarget = $this->db->query($sql, array($purpose->purpose_id))->result();
+
+          foreach($cpTarget as $target){
+            $sql = "INSERT INTO target 
+                      (purpose_id, code, name, created_by, status)
+                    VALUES (?, ?, ?, ?, ?)";
+            $this->db->query($sql, array($new_purpose_id, $target->code, $target->name, $_SESSION["username"], 'Draft'));
+            $new_target_id = $this->db->insert_id();
+            
+            $sql = "SELECT program_id, code, name FROM program WHERE target_id = ? ORDER BY code ASC ";
+            $cpProgram = $this->db->query($sql, array($target->target_id))->result();
+            
+            foreach($cpProgram as $program){
+              $sql = "INSERT INTO program 
+                        (target_id, code, name, created_by, status)
+                      VALUES (?, ?, ?, ?, ?)";
+              $this->db->query($sql, array($new_target_id, $program->code, $program->name, $_SESSION["username"], 'Draft'));
+            }
+          }
+        }
+      }
+
+      $message = "Draft berhasil disalin";
+      $this->db->trans_commit();
+      $data = (object) [
+        "ok"      => $ok,
+        "message" => $message
+      ];
+      return $data;
+    }catch (Exception $e) {
+      $this->db->trans_rollback();
+      $data = (object) [
+        "ok"      => $ok,
+        "message" => '%s : %s : Transaction failed. Error no: %s, Error msg:%s', __CLASS__, __FUNCTION__, $e->getCode(), $e->getMessage()
+      ];
+    } 
   }
 }
