@@ -145,7 +145,7 @@ $this->load->view('pages/_partials/header');
         </div>
       </div>
       <div class="modal-footer">
-        <?php if($indicator->status!=="Disetujui"){ ?>
+        <?php if($indicator->status!=="Disetujui"&&$indicator->status!=="Menunggu Persetujuan"){ ?>
         <button type="button" class="btn btn-primary" onclick="saveIndikator()">Simpan</button>
         <?php } ?>
       </div>
@@ -179,7 +179,7 @@ $this->load->view('pages/_partials/header');
               <div class="form-group col-md-12">
                 <label>
                   <b>SASARAN STRATEGIS <?php echo substr($target->code,1)." : ".$target->nama; ?></b>
-                  <?php if($indicator->status!=="Disetujui"){ ?>
+                  <?php if($indicator->status!=="Disetujui"&&$indicator->status!=="Menunggu Persetujuan"){ ?>
                   <button type='button' class='btn btn-sm btn-primary' onclick="addIndikator(<?php echo $target->id; ?>);">&nbsp;<i class='fa fa-plus'></i>&nbsp;</button>
                   <?php } ?>
                 </label>
@@ -207,7 +207,7 @@ $this->load->view('pages/_partials/header');
             <?php $i++; } ?>
           </div>
           <div class="card-footer bg-whitesmoke">
-            <?php if($indicator->status!=="Disetujui"){ ?>
+            <?php if($indicator->status!=="Disetujui"&&$indicator->status!=="Menunggu Persetujuan"){ ?>
             <button type="button" id="btn-save" class="btn btn-primary">Simpan</button>
             <?php }?>
           </div>
@@ -425,7 +425,7 @@ $this->load->view('pages/_partials/header');
                     "<td>"+row.satuan+"</td>" +
                     "<td>"+row.target+"</td>" +
                     "<td>"+
-                      <?php if($indicator->status!=="Disetujui"){ ?>
+                      <?php if($indicator->status!=="Disetujui"&&$indicator->status!=="Menunggu Persetujuan"){ ?>
                       "<button type=\"button\" class=\"btn btn-sm btn-primary\" onclick=\"addIndikator("+row.target_id+","+row.tempid+")\"><i class=\"fa fa-edit\"></i></button>" +
                       "<button type=\"button\" class=\"btn btn-sm btn-danger\" onclick=\"deleteIndikator("+row.target_id+","+row.tempid+")\"><i class=\"fa fa-times\"></i></button>" +
                       <?php } ?>

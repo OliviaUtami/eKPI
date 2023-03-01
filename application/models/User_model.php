@@ -112,4 +112,45 @@ class user_model extends CI_Model {
     ];
     return $data;
   }
+
+  public function get_notif($user_id, $read, $limit){
+    $limitstr = "";
+    if($limit){
+      $limitstr = " limit 10 ";
+    }
+    if($read!==""){
+      $sql = "select idnotification, userid, username, type, title, content, DATE_FORMAT(tstamp, '%d/%m/%Y %H:%i:%s') tstamp, byuser, isread, readon 
+            from notification 
+            where userid = ? and isread = ? order by tstamp desc ".$limitstr;
+      $data = $this->db->query($sql, array($user_id,$read))->result();
+    }else{
+      $sql = "select idnotification, userid, username, type, title, content, tstamp, byuser, isread, readon 
+            from notification 
+            where userid = ? order by tstamp desc ".$limitstr;
+      $data = $this->db->query($sql, array($user_id))->result();
+    }
+    return $data;
+  }
+
+  public function mark_as_read(){
+    try {
+      $this->db->trans_start();
+      $this->db->query("update notification
+                        set isread = 1, readon = now()
+                        where userid = ? and isread = 0 and tstamp < now()", array($_SESSION["user_id"]));
+      $this->db->trans_commit();
+      
+      $data = (object) [
+        "ok"      => "ok",
+        "message" => ""
+      ];
+      return $data;
+    }catch (Exception $e) {
+      $this->db->trans_rollback();
+      $data = (object) [
+        "ok"      => "not-ok",
+        "message" => '%s : %s : Transaction failed. Error no: %s, Error msg:%s', __CLASS__, __FUNCTION__, $e->getCode(), $e->getMessage()
+      ];
+    } 
+  }
 }

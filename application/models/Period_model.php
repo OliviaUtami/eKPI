@@ -22,6 +22,7 @@ class period_model extends CI_Model {
   }
 
   public function add_period($period_from, $period_to, $name, $status, $created, $draft_id){
+    var_dump($period_from);
     try {
       $this->db->trans_start();
       $message = ""; $ok = 1;
@@ -41,7 +42,7 @@ class period_model extends CI_Model {
           $draft_id=null;
         $sql = "INSERT INTO period
                   (period_from, period_to, name, status, created_by, draft_id)
-                VALUES (STR_TO_DATE(?, '%d/%m/%Y'), STR_TO_DATE(?, '%d/%m/%Y'), ?, ?, ?)";
+                VALUES (STR_TO_DATE(?, '%d/%m/%Y'), STR_TO_DATE(?, '%d/%m/%Y'), ?, ?, ?, ?)";
         $this->db->query($sql, array($period_from, $period_to, $name, $status, $created, $draft_id));
         $message = "Periode berhasil ditambahkan";
         

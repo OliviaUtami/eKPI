@@ -166,7 +166,7 @@ $this->load->view('pages/_partials/header');
               <div class="form-group col-md-5">
                   <label>Periode Pengisian</label>
                   <input type="text" class="form-control" id="name" name="name" autocomplete="off" value="<?php echo ($indicator->period_from." - ".$indicator->period_to); ?>" readonly>
-                  <input type="hidden" class="form-control" id="id" name="id" autocomplete="off" value="<?php echo $indicator->draft_id; ?>" required>
+                  <input type="hidden" class="form-control" id="id" name="id" autocomplete="off" value="<?php echo $indicator->indicator_id; ?>" required>
               </div>
             </div>
             <?php 

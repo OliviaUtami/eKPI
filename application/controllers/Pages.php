@@ -5,8 +5,11 @@ class Pages extends CI_Controller {
 	public function __construct()
 	{
 			parent::__construct();
-			// Your own constructor code
 			$this->load->library('session');
+			$this->load->model('user_model');
+    		$notif = $this->user_model->get_notif($_SESSION["user_id"],0,true);
+			$_SESSION['notif'] = $notif;
+			//var_dump($_SESSION['notif']);
 	}
 	public function index() {
 		$data = array(
@@ -38,6 +41,12 @@ class Pages extends CI_Controller {
 		}
 		return true;
 	}
+	public function mark_as_read(){
+		$this->load->model('user_model');
+		$this->user_model->mark_as_read();
+		$_SESSION["notif"]=[];
+	}
+
 	/** PAGE ORG - START */
 	public function dashboard() {
 		$data = array(
@@ -552,12 +561,12 @@ class Pages extends CI_Controller {
 		$this->load->view('pages/appr-indicator-view', $data);
 	}
 
-	public function view_indicator_approval_edit($draft_id) {
+	public function view_indicator_approval_edit($indicator_id) {
 		$this->check_login();
 		$this->load->model('user_model');
 		$this->load->model('indicator_model');
 		$user = $this->user_model->get_user_by_username($_SESSION["username"]);
-		$indicator = $this->indicator_model->get_indicator_by_draft_org($draft_id,$user->org_id);
+		$indicator = $this->indicator_model->get_indicator_approval_by_id($indicator_id);
 		//var_dump($indicator);
 		$data = array(
 			"title" 		=> "Manajemen Indikator (".$user->org_name.")",
@@ -566,15 +575,31 @@ class Pages extends CI_Controller {
 		);
 		$this->load->view('pages/appr-indicator-edit', $data);
 	}
-
-	public function publish_indicator($id){
+	public function process_indicator_approval_edit(){
+		if(!$this->check_login_api()){
+			return false;
+		}
+		$this->load->model('indicator_model');
+		
+		$json = file_get_contents('php://input');
+		$obj = json_decode($json);
+		$indicator_id = $obj->id;
+		$action = $obj->action;
+		$remarks = $obj->remarks;
+		
+		$data = $this->indicator_model->publish_indicator($indicator_id, $action, $remarks);
+		echo json_encode($data);
+		//var_dump($test);
+		//exit();
+	}
+	public function cancel_indicator_approval($id){
 		$this->check_login();
 		$this->load->model('indicator_model');
 		
-		$data = $this->indicator_model->publish_indicator($id);
+		$data = $this->indicator_model->cancel_indicator_approval($id);
 		$this->session->set_flashdata('message', $data->message);
 		//var_dump($data);
-		redirect('/indicator');
+		redirect('/indicator-approval');
 	}
 	/** PAGE INDICATOR - END */
 
@@ -595,12 +620,27 @@ class Pages extends CI_Controller {
 		$this->load->view('pages/kpi-view', $data);
 	}
 
-	public function view_kpi_edit($indicator_id) {
+	public function view_kpi_add($indicator_id) {
 		$this->check_login();
 		$this->load->model('user_model');
 		$this->load->model('kpi_model');
 		$user = $this->user_model->get_user_by_username($_SESSION["username"]);
 		$indicator = $this->kpi_model->get_kpi_indicator($indicator_id,$user);
+		//var_dump(json_encode($indicator));
+		$data = array(
+			"title" 		=> "KPI Saya",
+			"menu"			=> "kpi",
+			"indicator"		=> $indicator
+		);
+		$this->load->view('pages/kpi-edit', $data);
+	}
+
+	public function view_kpi_edit($ind_user_id) {
+		$this->check_login();
+		$this->load->model('user_model');
+		$this->load->model('kpi_model');
+		$user = $this->user_model->get_user_by_username($_SESSION["username"]);
+		$indicator = $this->kpi_model->get_kpi_indicator_by_ind_user($ind_user_id);
 		//var_dump(json_encode($indicator));
 		$data = array(
 			"title" 		=> "KPI Saya",
@@ -650,12 +690,12 @@ class Pages extends CI_Controller {
 		redirect('/kpi');
 	}
 
-	public function print_kpi($indicator_id) {
+	public function print_kpi($ind_user_id) {
 		$this->check_login();
 		$this->load->model('user_model');
 		$this->load->model('kpi_model');
 		$user = $this->user_model->get_user_by_username($_SESSION["username"]);
-		$indicator = $this->kpi_model->get_kpi_indicator($indicator_id,$user);
+		$indicator = $this->kpi_model->get_kpi_indicator_by_ind_user($ind_user_id);
 		//var_dump(json_encode($indicator));
 		$data = array(
 			"title" 		=> "KPI Saya",
@@ -665,4 +705,53 @@ class Pages extends CI_Controller {
 		$this->load->view('pages/kpi-print', $data);
 	}
 	/** PAGE KPI - END */
+
+	/** PAGE CHECK KPI - START */
+	public function view_check_kpi_list() {
+		$this->check_login();
+		$this->load->model('user_model');
+		$this->load->model('kpi_model');
+		$user = $this->user_model->get_user_by_username($_SESSION["username"]);
+		//var_dump($user);
+		$kpi = $this->kpi_model->get_check_kpi_list($user->user_id);
+		//var_dump($periods);
+		$data = array(
+			"title" 		=> "Daftar KPI Karyawan",
+			"menu"			=> "check-kpi",
+			"kpi"			=> $kpi
+		);
+		$this->load->view('pages/check-kpi-view', $data);
+	}
+
+	public function view_check_kpi_edit($ind_user_id) {
+		$this->check_login();
+		$this->load->model('user_model');
+		$this->load->model('kpi_model');
+		$user = $this->user_model->get_user_by_username($_SESSION["username"]);
+		$indicator = $this->kpi_model->get_kpi_indicator_by_ind_user($ind_user_id);
+		//var_dump(json_encode($indicator));
+		$data = array(
+			"title" 		=> "Cek KPI",
+			"menu"			=> "check-kpi",
+			"indicator"		=> $indicator
+		);
+		$this->load->view('pages/check-kpi-edit', $data);
+	}
+
+	public function process_check_kpi_edit(){
+		if(!$this->check_login_api()){
+			return false;
+		}
+		$this->load->model('kpi_model');
+		
+		$json = file_get_contents('php://input');
+		$obj = json_decode($json);
+		$ind_user_id = $obj->id;
+		$action = $obj->action;
+		$remarks = $obj->remarks;
+		$data = $this->kpi_model->process_kpi($ind_user_id, $action, $remarks);
+		echo json_encode($data);
+		//var_dump($test);
+		//exit();
+	}
 }

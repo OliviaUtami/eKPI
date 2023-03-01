@@ -66,3 +66,11 @@ table.dataTable thead .sorting::before, table.dataTable thead .sorting::after, t
     height: auto;
     line-height: 20px;
 }
+.dropdown-list .dropdown-item {
+    font-size: 11px;
+}
+.dropdown-list .dropdown-list-content {
+    height: auto !important;
+    max-height: 350px !important;
+    overflow: hidden;
+  }

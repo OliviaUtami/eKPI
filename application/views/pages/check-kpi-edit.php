@@ -89,7 +89,7 @@ $this->load->view('pages/_partials/header');
       </hr>
       <div class="modal-body">
         <div class="row">
-          <?php if($indicator->status=="Belum Ada"||$indicator->status=="Draft"||$indicator->status=="Menunggu Revisi"){ ?>
+          <?php if($indicator->status=="Draft"||$indicator->status=="Menunggu Revisi"){ ?>
           <div class="col-md-10">
             <input type="file" class="form-control file" id="inp-file" multiple/>
             <input type="hidden" class="form-control" id="inp-detid" readonly/>
@@ -133,10 +133,10 @@ $this->load->view('pages/_partials/header');
               <div class="form-group col-md-5">
                   <label>Periode Pengisian</label>
                   <input type="text" class="form-control" id="name" name="name" autocomplete="off" value="<?php echo ($indicator->period_from." - ".$indicator->period_to); ?>" readonly>
-                  <input type="hidden" class="form-control" id="id" name="id" autocomplete="off" value="<?php echo $indicator->indicator_id; ?>" required>
+                  <input type="hidden" class="form-control" id="id" name="id" autocomplete="off" value="<?php echo $indicator->ind_user_id; ?>" required>
               </div>
             </div>
-            <?php if($indicator->status=="Belum Ada"||$indicator->status=="Draft"||$indicator->status=="Menunggu Revisi"){ ?>
+            <?php if($indicator->status=="Draft"||$indicator->status=="Menunggu Revisi"){ ?>
             <div class="row">
               <div class="form-group col-md-8">
                 <input type="text" class="form-control" id="cboIndicator"/>
@@ -152,21 +152,21 @@ $this->load->view('pages/_partials/header');
             </div>
             <hr/>
             <?php } ?>
-            <?php if($indicator->remarks!==""){ ?>
-            <div class="row">
-              <div class="form-group col-md-10" <?php if($indicator->status!=="Menunggu Revisi"){ echo "style=\"display: none\""; } ?>>
-                  <label>Catatan</label>
-                  <textarea class="form-control" id="note" name="note" autocomplete="off" disabled><?php echo $indicator->remarks; ?></textarea>
-              </div>
-            </div>
-            <?php } ?>
             <div id="divIsi">
               
             </div>
+            <div class="row">
+              <div class="form-group col-md-10">
+                  <label>Catatan</label>
+                  <textarea class="form-control" id="note" name="note" autocomplete="off" <?php if($indicator->status!=="Dikirimkan"){ echo "disabled"; } ?>><?php if($indicator->remarks!=="null"){echo $indicator->remarks;} ?></textarea>
+                  
+              </div>
+            </div>
           </div>
           <div class="card-footer bg-whitesmoke">
-            <?php if($indicator->status=="Belum Ada"||$indicator->status=="Draft"||$indicator->status=="Menunggu Revisi"){ ?>
-              <button type="button" id="btn-save" class="btn btn-primary">Simpan</button>
+            <?php if($indicator->status=="Dikirimkan"){ ?>
+              <button type="button" data-status="approve" class="btn btn-primary btn-process">Setuju</button>
+              <button type="button" data-status="reject" class="btn btn-danger btn-process">Tolak</button>
             <?php } ?>
           </div>
         </div>
@@ -313,7 +313,7 @@ $this->load->view('pages/_partials/header');
       }
       var input_type = "number"; var htmlInp = ""; var nilai = 0;
       if(obj.tipe_indikator=="Persentase"||obj.tipe_indikator=="Batas Persentase"){
-          <?php if($indicator->status=="Belum Ada"||$indicator->status=="Draft"||$indicator->status=="Menunggu Revisi"){ ?>
+          <?php if($indicator->status=="Draft"||$indicator->status=="Menunggu Revisi"){ ?>
             htmlInp += `<input type="text" class="form-control percentage inpReal smallInput" autocomplete="off" data-detid="${obj.ind_det_id}" value="${obj.realisasi??""}"/>`;
           <?php }else{ ?>
             htmlInp += `<span style="text-align:center;">${obj.realisasi??""}</span>`;
@@ -325,7 +325,7 @@ $this->load->view('pages/_partials/header');
             nilai = Math.round((parseInt(obj.target_indikator_value)-parseInt(obj.realisasi))/parseInt(obj.target)*100*100)/100;
           }
       }else if(obj.tipe_indikator=="Angka"||obj.tipe_indikator=="Batas Angka"){
-        <?php if($indicator->status=="Belum Ada"||$indicator->status=="Draft"||$indicator->status=="Menunggu Revisi"){ ?>
+        <?php if($indicator->status=="Draft"||$indicator->status=="Menunggu Revisi"){ ?>
           htmlInp += `<input type="text" class="form-control number inpReal smallInput" autocomplete="off" data-detid="${obj.ind_det_id}" value="${obj.realisasi??""}"/>`;
         <?php }else{ ?>
           htmlInp += `<span style="text-align:center;">${obj.realisasi??""}</span>`;
@@ -337,7 +337,7 @@ $this->load->view('pages/_partials/header');
           nilai = Math.round((parseInt(obj.target_indikator_value)-parseInt(obj.realisasi))/parseInt(obj.target_indikator_value)*100*100)/100;
         }
       }else{
-        <?php if($indicator->status=="Belum Ada"||$indicator->status=="Draft"||$indicator->status=="Menunggu Revisi"){ ?>
+        <?php if($indicator->status=="Draft"||$indicator->status=="Menunggu Revisi"){ ?>
           htmlInp += `<select class="form-control inpReal smallSelect" data-detid="${obj.ind_det_id}">`;
           for(var j=0; j<obj.pilihan.length; j++){
             htmlInp += `<option value="${obj.pilihan[j].nilai}" ${(obj.pilihan[j].nilai==obj.realisasi?"selected":"")}>${obj.pilihan[j].nama}</option>`;
@@ -361,7 +361,7 @@ $this->load->view('pages/_partials/header');
                   <td class="center"><span class="spanNilai">${nilai}</span></td>
                   <td><span>${obj.dokumen.length}</span><button type="button" data-detid="${obj.ind_det_id}" class="btn btn-icon btn-sm btn-secondary btn-document" style="float: right" onclick="return false;"><i class="fa fa-search"></i></button></td>
                   <td>
-                    <?php if($indicator->status=="Belum Ada"||$indicator->status=="Draft"||$indicator->status=="Menunggu Revisi"){ ?>
+                    <?php if($indicator->status=="Draft"||$indicator->status=="Menunggu Revisi"){ ?>
                     <button type="button" data-detid="${obj.ind_det_id}" class="btn btn-icon btn-sm btn-danger btn-remove-indicator"><i class="fa fa-times"></i></button>
                     <?php } ?>
                   </td>
@@ -490,7 +490,7 @@ $this->load->view('pages/_partials/header');
                       <i class="fa fa-download"></i>
                     </a>`;
       }
-        html+=      `<?php if($indicator->status=="Belum Ada"||$indicator->status=="Draft"||$indicator->status=="Menunggu Revisi"){ ?>
+        html+=      `<?php if($indicator->status=="Draft"||$indicator->status=="Menunggu Revisi"){ ?>
                     <button type="button" data-idx="${i}" data-detid="${ind_det_id}" class="btn btn-icon btn-sm btn-danger btn-remove-doc">
                       <i class="fa fa-times"></i>
                     </button>
@@ -514,7 +514,7 @@ $this->load->view('pages/_partials/header');
       reloadTable();
     }
   });
-  <?php if($indicator->status=="Belum Ada"||$indicator->status=="Draft"||$indicator->status=="Menunggu Revisi"){ ?>
+  <?php if($indicator->status=="Draft"||$indicator->status=="Menunggu Revisi"){ ?>
   $(document).on("click", "#btn-save", function(){
     $.ajax({
         url: '<?php echo base_url(); ?>kpi/api/save_kpi',
@@ -592,4 +592,37 @@ $this->load->view('pages/_partials/header');
 
   })();
   reloadTable();
+
+  $(document).on("click",".btn-process",function(){
+    if(confirm(($(this).data("status")=="reject"?"Tolak":"Setujui")+" KPI ini ?")){
+      
+      if($(this).data("status")=="reject"&&$("#note").val().trim()==""){
+        alert("Catatan wajib diisi");
+        return;
+      }
+      
+      var param = {
+        id: $("#id").val().trim(),
+        action: $(this).data("status"),
+        remarks: $("#note").val().trim()
+      };
+      $.ajax({
+          url: 'process',
+          type: 'POST',
+          data: JSON.stringify(param),
+          dataType : "json",
+          contentType: "application/json; charset=utf-8",
+          success: function(data) {
+            if(data.ok==1){
+              window.location.replace("/eKPI/check-kpi");
+            }else{
+              alert(data.msg);
+            }
+          },
+          error: function(data) {
+              console.log(data);
+          }
+      });
+    }
+  });
 </script>

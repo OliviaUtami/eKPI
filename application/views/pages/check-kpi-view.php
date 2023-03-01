@@ -18,6 +18,7 @@ $this->load->view('pages/_partials/header');
                     <th>No</th>
                     <th>Periode Pengisian</th>
                     <th>Organisasi</th>
+                    <th>Karyawan</th>
                     <th>Status</th>
                     <th>Dibuat Oleh</th>
                     <th>Tindakan</th>
@@ -29,13 +30,14 @@ $this->load->view('pages/_partials/header');
                         <td></td>
                         <td><?php echo($data->period_from." - ".$data->period_to); ?></td>
                         <td><?php echo($data->org_name); ?></td>
+                        <td><?php echo($data->name); ?></td>
                         <td><?php echo($data->status); ?></td>
                         <td><?php echo($data->created_by."<br/>".$data->created_at); ?></td>
                         <td>
                             <?php if($data->status=="Belum Ada"){ ?>
                             <button class="btn btn-sm btn-warning" onclick="openKPI(<?php echo $data->indicator_id; ?>)" title="Isi KPI"><i class="fa fa-edit"></i></button>
                             <?php }else{ ?>
-                              <button class="btn btn-sm btn-primary" onclick="openExist(<?php echo $data->ind_user_id; ?>)" title="Lihat KPI"><i class="fa fa-eye"></i></button>
+                              <button class="btn btn-sm btn-success" onclick="openExist(<?php echo $data->ind_user_id; ?>)" title="Cek KPI"><i class="fa fa-edit"></i></button>
                               <button class="btn btn-sm btn-primary" onclick="print(<?php echo $data->ind_user_id; ?>)" title="Print KPI"><i class="fa fa-print"></i></button>
                             <?php } ?>
                             <?php if($data->ind_user_id!==NULL&&$data->ind_user_id!==-1&&($data->status=="Draft"||$data->status=="Menunggu Revisi")){ ?>
@@ -90,7 +92,7 @@ $this->load->view('pages/_partials/header');
     }
 
     function openExist(ind_user_id){
-      window.location.assign("kpi/edit/"+ind_user_id);
+      window.location.assign("check-kpi/edit/"+ind_user_id);
     }
 
     function print(ind_user_id){

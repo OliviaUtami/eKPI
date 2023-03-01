@@ -30,7 +30,7 @@ $this->load->view('pages/_partials/header');
                         <td><?php echo($data->status); ?></td>
                         <td><?php echo($data->created_by."<br/>".$data->created_at); ?></td>
                         <td>
-                            <?php if($data->status=="Belum Ada"||$data->status=="Draft"){ ?>
+                            <?php if($data->status=="Belum Ada"||$data->status=="Draft"||$data->status=="Menunggu Revisi"){ ?>
                             <button class="btn btn-sm btn-warning" onclick="manageIndicators(<?php echo $data->draft_id; ?>)" title="Indikator KPI"><i class="fa fa-edit"></i></button>
                             <?php } ?>
                             <?php if($data->indicator_id!==NULL&&$data->status=="Draft"){ ?>

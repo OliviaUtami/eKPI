@@ -282,7 +282,7 @@ class draft_model extends CI_Model {
               WHERE draft_id = ?";
       $this->db->query($sql, array($_SESSION["username"], $status, $approved_by, $approved_at, $remarks, $draft_id));
     }else{
-      $message = "Gagal melakukan pengajuan. Status draft ".$res->status."";
+      $message = "Gagal melakukan persetujuan. Status draft ".$res->status."";
     }
     $data = (object) [
 			"ok"      => $ok,

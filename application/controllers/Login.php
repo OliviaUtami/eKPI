@@ -32,15 +32,15 @@ class Login extends CI_Controller {
       $this->session->set_userdata($newdata);
       redirect('/', 'refresh');
     } else {
-      redirect('/dist/auth_login', 'refresh');
+      redirect('/login', 'refresh');
     }
 	}
-
+  
   public function session_logout() {
     $this->load->library('session');
 
     $this->session->sess_destroy();
-    redirect('/dist/auth_login', 'refresh');
+    redirect('/login', 'refresh');
 	}
 
 }
