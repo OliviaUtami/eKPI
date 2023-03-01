@@ -28,18 +28,19 @@ $this->load->view('pages/_partials/header');
                   <div class="form-group">
                     <div class="d-block">
                     	<label for="password" class="control-label">Password</label>
-                      <div class="float-right">
-                        <a href="<?php echo base_url(); ?>pages/auth_forgot_password" class="text-small">
-                          Forgot Password?
-                        </a>
-                      </div>
                     </div>
                     <input id="password" type="password" class="form-control" name="password" tabindex="2" required>
                     <div class="invalid-feedback">
-                      please fill in your password
+                      Please fill in your password
                     </div>
                   </div>
 
+                  <?php if($this->session->flashdata('message')){ ?>
+                    <div class="form-group">
+                      <span style="color:red"><?php echo $this->session->flashdata('message'); ?></span>
+                    </div>
+                  <?php } ?>
+                  
                   <div class="form-group">
                     <button type="submit" class="btn btn-primary btn-lg btn-block" tabindex="4">
                       Login

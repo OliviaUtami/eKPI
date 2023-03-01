@@ -7,8 +7,10 @@ class Pages extends CI_Controller {
 			parent::__construct();
 			$this->load->library('session');
 			$this->load->model('user_model');
-    		$notif = $this->user_model->get_notif($_SESSION["user_id"],0,true);
-			$_SESSION['notif'] = $notif;
+			if(isset($_SESSION["user_id"])){
+				$notif = $this->user_model->get_notif($_SESSION["user_id"],0,true);
+				$_SESSION['notif'] = $notif;
+			}
 			//var_dump($_SESSION['notif']);
 	}
 	public function index() {

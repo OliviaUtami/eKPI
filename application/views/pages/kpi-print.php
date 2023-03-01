@@ -71,7 +71,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
             </table>
           </div>
           <div class="card-footer bg-whitesmoke">
-            <button id="btnExport" class="btn green btn-xs" onclick="ExportToExcel('divIsi')">Export To Excel<i class="fa fa-expand"></i></button>
+            <button id="btnExport" class="btn green btn-xs" onclick="makeExcel()">Export To Excel<i class="fa fa-expand"></i></button>
           </div>
         </div>
       </form>
@@ -80,6 +80,269 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 </div>
 <?php $this->load->view('pages/_partials/footer'); ?>
 <script>
+  function makeExcel(){
+    const wb = new ExcelJS.Workbook();
+    wb.calcProperties.fullCalcOnLoad = true;
+    wb.views = [
+      {
+        x: 0, y: 0, width: 10000, height: 20000,
+        firstSheet: 0, activeTab: 1, visibility: 'visible',
+        showGridLines: false
+      }
+    ];
+    
+    var ws = wb.addWorksheet('Export',{
+      pageSetup:{paperSize: 9, orientation:'landscape',fitToPage: true}
+    });
+    ws.columns = [
+      { width: 15 },
+      { width: 60 },
+      { width: 15 },
+      { width: 15 },
+      { width: 15 },
+      { width: 15 },
+      { width: 15 },
+      { width: 15 },
+    ];
+    var row = 1;
+    //JUDUL
+    ws.mergeCells(`A${row}:G${row}`);
+    ws.getCell(`A${row}`).value = "KPI";
+    ws.getCell(`A${row}`).font = {
+      name: 'Calibri',
+      family: 4,
+      size: 14,
+      underline: false,
+      bold: true
+    };
+    row++;
+    //PERIODE
+    ws.mergeCells(`B${row}:G${row}`);
+    ws.getCell(`A${row}`).value = "Periode";
+    ws.getCell(`A${row}`).font = {
+      name: 'Calibri',
+      family: 4,
+      size: 12,
+      underline: false,
+      bold: true
+    };
+    ws.getCell(`B${row}`).value = "<?php echo ($indicator->period_from." - ".$indicator->period_to); ?>";
+    ws.getCell(`B${row}`).font = {
+      name: 'Calibri',
+      family: 4,
+      size: 12,
+      underline: false,
+      bold: true
+    };
+    row++;
+
+    //ORGANISASI
+    ws.mergeCells(`B${row}:G${row}`);
+    ws.getCell(`A${row}`).value = "Organisasi";
+    ws.getCell(`A${row}`).font = {
+      name: 'Calibri',
+      family: 4,
+      size: 12,
+      underline: false,
+      bold: true
+    };
+    ws.getCell(`B${row}`).value = "<?php echo ($indicator->org_name); ?>";
+    ws.getCell(`B${row}`).font = {
+      name: 'Calibri',
+      family: 4,
+      size: 12,
+      underline: false,
+      bold: true
+    };
+    row++;
+
+    //NAMA
+    ws.mergeCells(`B${row}:G${row}`);
+    ws.getCell(`A${row}`).value = "Nama";
+    ws.getCell(`A${row}`).font = {
+      name: 'Calibri',
+      family: 4,
+      size: 12,
+      underline: false,
+      bold: true
+    };
+    ws.getCell(`B${row}`).value = "<?php echo ($indicator->name); ?>";
+    ws.getCell(`B${row}`).font = {
+      name: 'Calibri',
+      family: 4,
+      size: 12,
+      underline: false,
+      bold: true
+    };
+    row++;
+    //KOSONG
+    
+
+    //LOOP THROUGH INDICATOR
+    var prev_sasaran = "";
+    indikator.sort((a,b) => ( (a.kode_indikator).localeCompare((b.kode_indikator), 'en', { numeric: true })));
+    var totalpersasaran = 0, count = 0, grandtotal = 0, countsasaran = 0;    
+    var fontHeader = {
+          name: 'Calibri',
+          family: 4,
+          size: 12,
+          underline: false,
+          bold: true
+        };
+    var fontContent = {
+          name: 'Calibri',
+          family: 4,
+          size: 12,
+          underline: false,
+          bold: false
+        };
+    var bgAliceBlue = {
+                type: 'pattern',
+                pattern: 'darkVertical',
+                fgColor: {
+                    argb: '00F0F8FF'
+                }
+            };;
+    for(var i=0; i<indikator.length; i++){
+      var obj = indikator[i];
+      //HEADER
+      if(prev_sasaran!==obj.kode_sasaran){
+        ws.mergeCells(`A${row}:G${row}`);
+        row++;
+        ws.mergeCells(`A${row}:G${row}`);
+        ws.getCell(`A${row}`).value = `SASARAN STRATEGIS ${obj.kode_sasaran.substr(1)+" : "+obj.nama_sasaran}`;
+        ws.getCell(`A${row}`).font = fontHeader;
+        row++;
+        ws.getRow(row).alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+        ws.getRow(row).font = fontHeader;
+        ws.getCell(`A${row}`).value = `KODE`;
+        ws.getCell(`B${row}`).value = `INDIKATOR KINERJA PROGRAM`;
+        ws.getCell(`C${row}`).value = `SATUAN`;
+        ws.getCell(`D${row}`).value = `REALISASI`;
+        ws.getCell(`E${row}`).value = `TARGET`;
+        ws.getCell(`F${row}`).value = `NILAI`;
+        ws.getCell(`G${row}`).value = `DOKUMEN`;
+        [`A${row}`,`B${row}`,`C${row}`,`D${row}`,`E${row}`,`F${row}`,`G${row}`].map(key => {
+              ws.getCell(key).border = {
+                top: {style:'thin'},
+                left: {style:'thin'},
+                bottom: {style:'thin'},
+                right: {style:'thin'}
+              };
+        });
+        row++;
+      }
+      var input_type = "number"; var htmlInp = ""; var nilai = 0;
+      if(obj.tipe_indikator=="Persentase"||obj.tipe_indikator=="Batas Persentase"){
+        htmlInp += `${obj.realisasi??""}`;
+        if(obj.tipe_indikator=="Persentase"&&obj.realisasi!==null){
+          nilai = Math.round(parseInt(obj.realisasi)/parseInt(obj.target_indikator_value)*100*100)/100;
+        }else if(obj.tipe_indikator=="Batas Persentase"&&obj.realisasi!==null){
+          nilai = Math.round((parseInt(obj.target_indikator_value)-parseInt(obj.realisasi))/parseInt(obj.target)*100*100)/100;
+        }
+      }else if(obj.tipe_indikator=="Angka"||obj.tipe_indikator=="Batas Angka"){
+        htmlInp += `${obj.realisasi??""}`;
+        if(obj.tipe_indikator=="Angka"&&obj.realisasi!==null){
+          nilai = Math.round(parseInt(obj.realisasi)/parseInt(obj.target_indikator_value)*100*100)/100;
+        }else if(obj.tipe_indikator=="Angka"&&obj.realisasi!==null){
+          nilai = Math.round((parseInt(obj.target_indikator_value)-parseInt(obj.realisasi))/parseInt(obj.target_indikator_value)*100*100)/100;
+        }
+      }else{
+        for(var j=0; j<obj.pilihan.length; j++){
+          htmlInp += `${(obj.pilihan[j].nilai==obj.realisasi?obj.pilihan[j].nama:"")}`;
+        }
+      }
+      totalpersasaran+=nilai; count++;
+
+      //ISI PER INDIKATOR
+      ws.getRow(row).alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+      [`A${row}`,`B${row}`,`C${row}`,`D${row}`,`E${row}`,`F${row}`,`G${row}`].map(key => {
+            ws.getCell(key).border = {
+              top: {style:'thin'},
+              left: {style:'thin'},
+              bottom: {style:'thin'},
+              right: {style:'thin'}
+            };
+      });
+      ws.getRow(row).font = fontContent;
+      ws.getCell(`A${row}`).value = `${obj.kode_indikator}`;
+      ws.getCell(`A${row}`).alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
+      ws.getCell(`B${row}`).value = `${obj.nama_indikator}`;
+      ws.getCell(`B${row}`).alignment = { vertical: 'middle', horizontal: 'left', wrapText: true };
+      ws.getCell(`C${row}`).value = `${obj.satuan_indikator}`;
+      ws.getCell(`D${row}`).value = `${htmlInp}`;
+      ws.getCell(`E${row}`).value = `${obj.target_indikator}`;
+      ws.getCell(`F${row}`).value = `${nilai}`;
+      ws.getCell(`G${row}`).value = `${obj.dokumen.length}`;
+      row++;
+      if(i==indikator.length-1||indikator[i+1].kode_sasaran!==obj.kode_sasaran){  
+        countsasaran++;
+        grandtotal+=Math.round(totalpersasaran/count*100)/100;
+        
+        ws.mergeCells(`A${row}:E${row}`);
+        ws.getRow(row).font = fontHeader;
+        
+        ws.getCell(`A${row}`).alignment = { vertical: 'middle', horizontal: 'right', wrapText: true };
+        ws.getCell(`A${row}`).value = `JUMLAH`;
+        ws.getCell(`F${row}`).value = `${Math.round(totalpersasaran/count*100)/100}`;
+        ws.getCell(`F${row}`).alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+        [`A${row}`,`F${row}`,`G${row}`].map(key => {
+              ws.getCell(key).border = {
+                top: {style:'thin'},
+                left: {style:'thin'},
+                bottom: {style:'thin'},
+                right: {style:'thin'}
+              };
+        });
+        row++;
+
+        if(i==indikator.length-1){
+          ws.mergeCells(`A${row}:E${row}`);
+          ws.getRow(row).font = fontHeader;
+          ws.getCell(`A${row}`).alignment = { vertical: 'middle', horizontal: 'right', wrapText: true };
+          ws.getCell(`A${row}`).value = `TOTAL NILAI`;
+          ws.getCell(`F${row}`).value = `${Math.round(grandtotal/countsasaran*100)/100}`;
+          ws.getCell(`F${row}`).alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
+          [`A${row}`,`F${row}`,`G${row}`].map(key => {
+                ws.getCell(key).border = {
+                  top: {style:'thin'},
+                  left: {style:'thin'},
+                  bottom: {style:'thin'},
+                  right: {style:'thin'}
+                };
+          });
+          row++;
+        }
+        totalpersasaran = 0; count = 0;
+      }
+      prev_sasaran = obj.kode_sasaran;
+    }
+    //$("#divIsi").append(html);
+
+    //WRITE TO FILE
+    wb.xlsx.writeBuffer( {
+        base64: true
+    })
+    .then( function (xls64) {
+        // build anchor tag and attach file (works in chrome)
+        var a = document.createElement("a");
+        var data = new Blob([xls64], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+
+        var url = URL.createObjectURL(data);
+        a.href = url;
+        a.download = "export.xlsx";
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(function() {
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(url);
+            },
+            0);
+    })
+    .catch(function(error) {
+        console.log(error.message);
+    });
+  }
   function ExportToExcel(tableid) {
       var tab_text = "<table><tr>";
       var textRange; var j = 0;
