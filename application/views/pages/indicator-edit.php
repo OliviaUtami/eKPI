@@ -153,6 +153,7 @@ $this->load->view('pages/_partials/header');
   </div>
 </div>
 <!-- Main Content -->
+<?php if(isset($indicator)){ ?>
 <div class="main-content">
   <section class="section">
     <div class="section-header">
@@ -216,6 +217,28 @@ $this->load->view('pages/_partials/header');
     </div>
   </section>
 </div>
+<?php } else{ ?>
+  <div class="main-content">
+  <section class="section">
+    <div class="section-header">
+      <h1><?php echo $title ?></h1>
+    </div>
+    <div class="section-body">
+      <div class="card">
+        <div class="card-body">
+          <div class="row">
+            <div class="form-group col-md-12">
+              <div class="alert alert-danger">
+                <div class="alert-title">Data tidak ditemukan</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+<?php } ?>
 <?php $this->load->view('pages/_partials/footer'); ?>
 <script>
   <?php if($this->session->flashdata('message')){ ?>

@@ -105,22 +105,27 @@ $route['indicator/api/get_program']['post'] = 'pages/get_program_by_target';
 $route['indicator/api/save_indicator']['post'] = 'pages/process_indicator_add';
 
 $route['indicator-approval'] = 'pages/view_indicator_approval_list';
-$route['indicator-approval/edit/(:num)'] = 'pages/view_indicator_approval_edit/$1';
+$route['indicator-approval/edit/(:any)']['get'] = 'pages/view_indicator_approval_edit/$1';
 $route['indicator-approval/edit/process']['post'] = 'pages/process_indicator_approval_edit';
-$route['indicator-approval/cancel/(:num)'] = 'pages/cancel_indicator_approval/$1';
+$route['indicator-approval/cancel/(:any)'] = 'pages/cancel_indicator_approval/$1';
 
 //kpi
 $route['kpi'] = 'pages/view_kpi_list';
 $route['kpi/add/(:num)'] = 'pages/view_kpi_add/$1';
-$route['kpi/edit/(:num)'] = 'pages/view_kpi_edit/$1';
+$route['kpi/edit/(:any)'] = 'pages/view_kpi_edit/$1';
 $route['kpi/api/get_indicator']['post'] = 'pages/get_indicator';
 $route['kpi/api/save_kpi']['post'] = 'pages/process_kpi_add';
-$route['kpi/submit/(:num)'] = 'pages/submit_kpi/$1';
-$route['kpi/print/(:num)'] = 'pages/print_kpi/$1';
+$route['kpi/submit/(:any)'] = 'pages/submit_kpi/$1';
+$route['kpi/print/(:any)'] = 'pages/print_kpi/$1';
 
 //kpi
 $route['check-kpi'] = 'pages/view_check_kpi_list';
 $route['check-kpi/edit/(:num)'] = 'pages/view_check_kpi_edit/$1';
 $route['check-kpi/edit/process']['post'] = 'pages/process_check_kpi_edit';
 $route['check-kpi/cancel/(:num)'] = 'pages/cancel_draft_approval/$1';
+
+//notification
+$route['notification'] = 'pages/view_notification_list';
+$route['notification'] = 'pages/view_notification_list';
+
 //$route['kpi/api/remove_doc']['post'] = 'pages/remove_doc';

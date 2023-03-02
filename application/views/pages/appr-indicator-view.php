@@ -31,10 +31,10 @@ $this->load->view('pages/_partials/header');
                         <td><?php echo($data->created_by."<br/>".$data->created_at); ?></td>
                         <td>
                             <?php if($data->status=="Menunggu Persetujuan"||$data->status=="Disetujui"){ ?>
-                            <button class="btn btn-sm btn-primary" onclick="editIndicator(<?php echo $data->indicator_id; ?>)" title="Indikator KPI"><i class="fa fa-eye"></i></button>
+                            <button class="btn btn-sm btn-primary" onclick="editIndicator('<?php echo $data->uid; ?>')" title="Indikator KPI"><i class="fa fa-eye"></i></button>
                             <?php } ?>
                             <?php if($data->status=="Disetujui"){ ?>
-                            <button class="btn btn-sm btn-danger" onclick="cancelApproval(<?php echo $data->indicator_id; ?>)" title="Batalkan Persetujuan"><i class="fa fa-lock-open"></i></button>
+                            <button class="btn btn-sm btn-danger" onclick="cancelApproval('<?php echo $data->uid; ?>')" title="Batalkan Persetujuan"><i class="fa fa-lock-open"></i></button>
                             <?php } ?>
                         </td>
                     </tr>
@@ -80,11 +80,11 @@ $this->load->view('pages/_partials/header');
         <?php } ?>
     });
 
-    function editIndicator(id){
-      window.location.replace("indicator-approval/edit/"+id);
+    function editIndicator(uid){
+      window.location.replace("indicator-approval/edit/"+uid);
     }
-    function cancelApproval(id){
+    function cancelApproval(uid){
       if(confirm("Batalkan persetujuan untuk Indikator Program KPI berikut?\nStatus akan kembali ke status \"Menunggu Persetujuan\""))
-        window.location.replace("indicator-approval/cancel/"+id);
+        window.location.replace("indicator-approval/cancel/"+uid);
     }
 </script>

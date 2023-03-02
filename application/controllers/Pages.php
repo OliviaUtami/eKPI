@@ -563,12 +563,12 @@ class Pages extends CI_Controller {
 		$this->load->view('pages/appr-indicator-view', $data);
 	}
 
-	public function view_indicator_approval_edit($indicator_id) {
+	public function view_indicator_approval_edit($uid) {
 		$this->check_login();
 		$this->load->model('user_model');
 		$this->load->model('indicator_model');
 		$user = $this->user_model->get_user_by_username($_SESSION["username"]);
-		$indicator = $this->indicator_model->get_indicator_approval_by_id($indicator_id);
+		$indicator = $this->indicator_model->get_indicator_approval_by_uid($uid);
 		//var_dump($indicator);
 		$data = array(
 			"title" 		=> "Manajemen Indikator (".$user->org_name.")",
@@ -637,12 +637,12 @@ class Pages extends CI_Controller {
 		$this->load->view('pages/kpi-edit', $data);
 	}
 
-	public function view_kpi_edit($ind_user_id) {
+	public function view_kpi_edit($uid) {
 		$this->check_login();
 		$this->load->model('user_model');
 		$this->load->model('kpi_model');
 		$user = $this->user_model->get_user_by_username($_SESSION["username"]);
-		$indicator = $this->kpi_model->get_kpi_indicator_by_ind_user($ind_user_id);
+		$indicator = $this->kpi_model->get_kpi_indicator_by_uid($uid);
 		//var_dump(json_encode($indicator));
 		$data = array(
 			"title" 		=> "KPI Saya",
@@ -692,12 +692,12 @@ class Pages extends CI_Controller {
 		redirect('/kpi');
 	}
 
-	public function print_kpi($ind_user_id) {
+	public function print_kpi($uid) {
 		$this->check_login();
 		$this->load->model('user_model');
 		$this->load->model('kpi_model');
 		$user = $this->user_model->get_user_by_username($_SESSION["username"]);
-		$indicator = $this->kpi_model->get_kpi_indicator_by_ind_user($ind_user_id);
+		$indicator = $this->kpi_model->get_kpi_indicator_by_uid($uid);
 		//var_dump(json_encode($indicator));
 		$data = array(
 			"title" 		=> "KPI Saya",
@@ -725,12 +725,12 @@ class Pages extends CI_Controller {
 		$this->load->view('pages/check-kpi-view', $data);
 	}
 
-	public function view_check_kpi_edit($ind_user_id) {
+	public function view_check_kpi_edit($uid) {
 		$this->check_login();
 		$this->load->model('user_model');
 		$this->load->model('kpi_model');
 		$user = $this->user_model->get_user_by_username($_SESSION["username"]);
-		$indicator = $this->kpi_model->get_kpi_indicator_by_ind_user($ind_user_id);
+		$indicator = $this->kpi_model->get_kpi_indicator_by_uid($uid);
 		//var_dump(json_encode($indicator));
 		$data = array(
 			"title" 		=> "Cek KPI",

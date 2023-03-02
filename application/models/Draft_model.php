@@ -5,7 +5,7 @@ class draft_model extends CI_Model {
               draft_id, name, status, DATE_FORMAT(created_at, '%d/%m/%Y %H:%i:%s') created_at, created_by, 
               DATE_FORMAT(approved_at, '%d/%m/%Y %H:%i:%s') approved_at, approved_by
             FROM `draft` 
-            WHERE deleted = 0
+            WHERE coalesce(deleted,0) = 0
             ORDER BY draft_id DESC;";
     return $this->db->query($sql)->result();
   }

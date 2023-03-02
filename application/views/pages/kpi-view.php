@@ -35,11 +35,11 @@ $this->load->view('pages/_partials/header');
                             <?php if($data->status=="Belum Ada"){ ?>
                             <button class="btn btn-sm btn-warning" onclick="openKPI(<?php echo $data->indicator_id; ?>)" title="Isi KPI"><i class="fa fa-edit"></i></button>
                             <?php }else{ ?>
-                              <button class="btn btn-sm btn-primary" onclick="openExist(<?php echo $data->ind_user_id; ?>)" title="Lihat KPI"><i class="fa fa-eye"></i></button>
-                              <button class="btn btn-sm btn-primary" onclick="print(<?php echo $data->ind_user_id; ?>)" title="Print KPI"><i class="fa fa-print"></i></button>
+                              <button class="btn btn-sm btn-primary" onclick="openExist('<?php echo $data->uid; ?>')" title="Lihat KPI"><i class="fa fa-eye"></i></button>
+                              <button class="btn btn-sm btn-primary" onclick="print('<?php echo $data->uid; ?>')" title="Print KPI"><i class="fa fa-print"></i></button>
                             <?php } ?>
                             <?php if($data->ind_user_id!==NULL&&$data->ind_user_id!==-1&&($data->status=="Draft"||$data->status=="Menunggu Revisi")){ ?>
-                            <button class="btn btn-sm btn-primary" onclick="sendKPI(<?php echo $data->ind_user_id; ?>)" title="Kirimkan KPI"><i class="fa fa-paper-plane"></i></button>
+                            <button class="btn btn-sm btn-primary" onclick="sendKPI('<?php echo $data->uid; ?>')" title="Kirimkan KPI"><i class="fa fa-paper-plane"></i></button>
                             <?php } ?>
                         </td>
                     </tr>
@@ -89,15 +89,15 @@ $this->load->view('pages/_partials/header');
       window.location.assign("kpi/add/"+indicator_id);
     }
 
-    function openExist(ind_user_id){
-      window.location.assign("kpi/edit/"+ind_user_id);
+    function openExist(uid){
+      window.location.assign("kpi/edit/"+uid);
     }
 
-    function print(ind_user_id){
-      window.location.assign("kpi/print/"+ind_user_id);
+    function print(uid){
+      window.location.assign("kpi/print/"+uid);
     }
 
-    function sendKPI(indicator_id){
-      window.location.assign("kpi/submit/"+indicator_id);
+    function sendKPI(uid){
+      window.location.assign("kpi/submit/"+uid);
     }
 </script>

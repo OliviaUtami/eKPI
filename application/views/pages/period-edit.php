@@ -14,6 +14,7 @@ $this->load->view('pages/_partials/header');
             <h1><?php echo $title ?></h1>
           </div>
           <div class="section-body">
+            <?php if(isset($perioddata)){ ?>
             <form id="formEdit" method="POST" action="process">
               <div class="card">
                 <div class="card-body">
@@ -64,6 +65,19 @@ $this->load->view('pages/_partials/header');
                 </div>
               </div>
             </form>
+            <?php } else { ?>
+              <div class="card">
+                <div class="card-body">
+                  <div class="row">
+                    <div class="form-group col-md-12">
+                      <div class="alert alert-danger">
+                        <div class="alert-title">Data tidak ditemukan</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            <?php } ?>
           </div>
         </section>
       </div>

@@ -159,6 +159,7 @@ $this->load->view('pages/_partials/header');
       <h1><?php echo $title ?></h1>
     </div>
     <div class="section-body">
+      <?php if(isset($indicator)){ ?>
       <form id="formAdd" method="POST" action="/edit/process">
         <div class="card">
           <div class="card-body">
@@ -166,7 +167,7 @@ $this->load->view('pages/_partials/header');
               <div class="form-group col-md-5">
                   <label>Periode Pengisian</label>
                   <input type="text" class="form-control" id="name" name="name" autocomplete="off" value="<?php echo ($indicator->period_from." - ".$indicator->period_to); ?>" readonly>
-                  <input type="hidden" class="form-control" id="id" name="id" autocomplete="off" value="<?php echo $indicator->indicator_id; ?>" required>
+                  <input type="hidden" class="form-control" id="id" name="id" autocomplete="off" value="<?php echo $indicator->uid; ?>" required>
               </div>
             </div>
             <?php 
@@ -205,17 +206,32 @@ $this->load->view('pages/_partials/header');
             <div class="row">
               <div class="form-group col-md-10">
                   <label>Catatan</label>
-                  <textarea class="form-control" id="note" name="note" autocomplete="off" <?php if($indicator->status!=="Menunggu Persetujuan"){ echo "disabled"; } ?>><?php echo $indicator->remarks; ?></textarea>
+                  <textarea class="form-control" id="note" name="note" autocomplete="off" <?php if($indicator->status!=="Menunggu Persetujuan"){ echo "disabled"; } ?>><?php if($indicator->remarks!=="null"){echo $indicator->remarks;} ?></textarea>
                   
               </div>
             </div>
           </div>
           <div class="card-footer bg-whitesmoke">
+          <?php if($indicator->status!=="Disetujui"){ ?>
             <button type="button" data-status="approve" class="btn btn-primary btn-process">Setuju</button>
             <button type="button" data-status="reject" class="btn btn-danger btn-process">Tolak</button>
+          <?php } ?>
           </div>
         </div>
       </form>
+      <?php } else{ ?>
+        <div class="card">
+          <div class="card-body">
+            <div class="row">
+              <div class="form-group col-md-12">
+                <div class="alert alert-danger">
+                  <div class="alert-title">Data tidak ditemukan</div>
+                </div>              
+              </div>
+            </div>
+          </div>
+        </div>
+      <?php } ?>
     </div>
   </section>
 </div>

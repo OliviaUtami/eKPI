@@ -54,6 +54,7 @@ class indicator_model extends CI_Model {
       }
       $target->indicators = $indikator;
     }
+    if($data !== null)
     $data->targets = $targets;
     
     return $data;
@@ -272,9 +273,9 @@ class indicator_model extends CI_Model {
       $message = "Indikator berhasil disimpan";
     }else{
       $sql = "INSERT INTO indicator 
-                (draft_id, org_id, created_by, status)
-              VALUES (?, ?, ?, ?)";
-      $this->db->query($sql, array($draft_id, $user->org_id, $user->username, "Draft"));
+                (draft_id, org_id, created_by, status, uid)
+              VALUES (?, ?, ?, ?, ?)";
+      $this->db->query($sql, array($draft_id, $user->org_id, $user->username, "Draft", bin2hex(random_bytes(20))));
       $indikator_id = $this->db->insert_id();
       for($i=0;$i<count($indikator);$i++){
         $det = $indikator[$i]->details;
@@ -329,7 +330,8 @@ class indicator_model extends CI_Model {
     $sql = "SELECT 
             indicator_id, i.draft_id, org_id, i.status, DATE_FORMAT(i.created_at, '%d/%m/%Y %H:%i:%s') created_at, i.created_by, 
             DATE_FORMAT(i.approved_at, '%d/%m/%Y %H:%i:%s') approved_at, i.approved_by, 
-            p.name period_name, DATE_FORMAT(p.period_from, '%d/%m/%Y') period_from, DATE_FORMAT(p.period_to, '%d/%m/%Y') period_to
+            p.name period_name, DATE_FORMAT(p.period_from, '%d/%m/%Y') period_from, DATE_FORMAT(p.period_to, '%d/%m/%Y') period_to,
+            i.uid
           FROM indicator i
           JOIN period p on i.draft_id = p.draft_id
           WHERE p.status = 'Aktif' and i.status IN ('Menunggu Persetujuan','Disetujui')
@@ -337,58 +339,59 @@ class indicator_model extends CI_Model {
     return $this->db->query($sql)->result();
   }
 
-  public function get_indicator_approval_by_id($indicator_id){
+  public function get_indicator_approval_by_uid($uid){
     $sql = "SELECT 
               p.period_id, DATE_FORMAT(period_from, '%d/%m/%Y') period_from, DATE_FORMAT(period_to, '%d/%m/%Y') period_to, 
               p.draft_id, i.indicator_id, i.org_id, coalesce(i.status,'Belum Ada') status, i.created_by, DATE_FORMAT(i.created_at, '%d/%m/%Y %H:%i:%s') created_at,
-              i.remarks
+              i.remarks, i.uid
             FROM period p 
             LEFT JOIN indicator i ON p.draft_id = i.draft_id
-            WHERE DATE(SYSDATE()) BETWEEN p.period_from AND p.period_to AND p.status = 'Aktif' AND i.indicator_id = ? ";
-    $data = $this->db->query($sql,array($indicator_id))->row();
-    
-    $sqlTarget = "SELECT 
-                  t.target_id id, t.code, t.name nama
-                FROM `target` t
-                JOIN `purpose` p ON  t.purpose_id = p.purpose_id
-                JOIN `mission` m on p.mission_id = m.mission_id
-                LEFT JOIN `indicator` i on m.draft_id = i.draft_id
-                WHERE m.draft_id = ?
-                ORDER BY t.target_id ASC";
-    $targets = $this->db->query($sqlTarget,array($data->draft_id))->result();
-    $tempid = 1;
-    foreach($targets as $target){
-      $sql   = "SELECT 
-                    d.ind_det_id, d.nama indikator, d.kode indikator_kode,
-                    d.program_id, p.code program_kode, d.satuan, d.target,
-                    p.target_id, d.tipe
-                FROM indicator_detail d
-                JOIN indicator h on d.indicator_id = h.indicator_id
-                JOIN program p on d.program_id = p.program_id
-                WHERE h.indicator_id = ? and p.target_id = ?
-                ORDER BY d.kode ASC";
-      $indikator = $this->db->query($sql,array($indicator_id, $target->id))->result();
-      foreach($indikator as $ind){
-        $ind->tempid = $tempid;
-        if($ind->tipe=="Pilihan Kustom"){
-          $sql   = "SELECT custval_id, nama, nilai FROM indicator_custom_value WHERE ind_det_id = ? ORDER BY custval_id ASC";
-          $pilihan = $this->db->query($sql,array($ind->ind_det_id))->result();
-          $ind->pilihan = $pilihan;
-        }else{
-          $ind->pilihan = array();
+            WHERE DATE(SYSDATE()) BETWEEN p.period_from AND p.period_to AND p.status = 'Aktif' AND i.uid = ? ";
+    $data = $this->db->query($sql,array($uid))->row();
+    if($data !== null){
+      $sqlTarget = "SELECT 
+                    t.target_id id, t.code, t.name nama
+                  FROM `target` t
+                  JOIN `purpose` p ON  t.purpose_id = p.purpose_id
+                  JOIN `mission` m on p.mission_id = m.mission_id
+                  LEFT JOIN `indicator` i on m.draft_id = i.draft_id
+                  WHERE m.draft_id = ?
+                  ORDER BY t.target_id ASC";
+      $targets = $this->db->query($sqlTarget,array($data->draft_id))->result();
+      $tempid = 1;
+      foreach($targets as $target){
+        $sql   = "SELECT 
+                      d.ind_det_id, d.nama indikator, d.kode indikator_kode,
+                      d.program_id, p.code program_kode, d.satuan, d.target,
+                      p.target_id, d.tipe
+                  FROM indicator_detail d
+                  JOIN indicator h on d.indicator_id = h.indicator_id
+                  JOIN program p on d.program_id = p.program_id
+                  WHERE h.uid = ? and p.target_id = ?
+                  ORDER BY d.kode ASC";
+        $indikator = $this->db->query($sql,array($uid, $target->id))->result();
+        foreach($indikator as $ind){
+          $ind->tempid = $tempid;
+          if($ind->tipe=="Pilihan Kustom"){
+            $sql   = "SELECT custval_id, nama, nilai FROM indicator_custom_value WHERE ind_det_id = ? ORDER BY custval_id ASC";
+            $pilihan = $this->db->query($sql,array($ind->ind_det_id))->result();
+            $ind->pilihan = $pilihan;
+          }else{
+            $ind->pilihan = array();
+          }
+          $tempid++;
         }
-        $tempid++;
+        $target->indicators = $indikator;
       }
-      $target->indicators = $indikator;
+      $data->targets = $targets;
     }
-    $data->targets = $targets;
     
     return $data;
   }
 
-  public function publish_indicator($indicator_id, $action, $remarks){
+  public function publish_indicator($uid, $action, $remarks){
     $message = ""; $ok = 1;
-    $res = $this->db->query("SELECT status FROM indicator WHERE indicator_id = ?",array($indicator_id))->row();
+    $res = $this->db->query("SELECT status FROM indicator WHERE uid = ?",array($uid))->row();
     //var_dump("publish_indicator".$res->status);
     if($res->status=="Menunggu Persetujuan"){
       if($action=="approve"){
@@ -411,8 +414,8 @@ class indicator_model extends CI_Model {
                   approved_by = ?,
                   approved_at = ?,
                   remarks = ?
-              WHERE indicator_id = ?";
-      $this->db->query($sql, array($_SESSION["username"], $status, $approved_by, $approved_at, $remarks, $indicator_id));
+              WHERE uid = ?";
+      $this->db->query($sql, array($_SESSION["username"], $status, $approved_by, $approved_at, $remarks, $uid));
     }else{
       $message = "Gagal Disetujui. Status Indikator Program ".$res->status."";
     }
@@ -423,12 +426,12 @@ class indicator_model extends CI_Model {
     return $data;
   }
 
-  public function cancel_indicator_approval($indicator_id){
+  public function cancel_indicator_approval($uid){
     $message = ""; $ok = 1;
     if(1==0){
       $message = "Gagal membatalkan persetujuan. Draft KPI sudah digunakan untuk periode pengisian.";
     }else{
-      $res = $this->db->query("SELECT status FROM indicator WHERE indicator_id = ?",array($indicator_id))->row();
+      $res = $this->db->query("SELECT status FROM indicator WHERE uid = ?",array($uid))->row();
       if($res->status=="Disetujui"){
         $status = "Menunggu Persetujuan";
         $approved_by = null;
@@ -442,8 +445,8 @@ class indicator_model extends CI_Model {
                     approved_by = ?,
                     approved_at = ?,
                     remarks = ?
-                WHERE indicator_id = ?";
-        $this->db->query($sql, array($_SESSION["username"], $status, $approved_by, $approved_at, $remarks, $indicator_id));
+                WHERE uid = ?";
+        $this->db->query($sql, array($_SESSION["username"], $status, $approved_by, $approved_at, $remarks, $uid));
       }else{
         $message = "Gagal membatalkan persetujuan. Status saat ini ".$res->status."";
       }
