@@ -126,6 +126,5 @@ $route['check-kpi/cancel/(:num)'] = 'pages/cancel_draft_approval/$1';
 
 //notification
 $route['notification'] = 'pages/view_notification_list';
-$route['notification'] = 'pages/view_notification_list';
 
 //$route['kpi/api/remove_doc']['post'] = 'pages/remove_doc';

@@ -756,4 +756,18 @@ class Pages extends CI_Controller {
 		//var_dump($test);
 		//exit();
 	}
+
+	public function view_notification_list() {
+		$this->check_login();
+		$this->load->model('user_model');
+		$notif = $this->user_model->get_notif($_SESSION["user_id"],"",false);
+		var_dump($notif);
+		
+		$data = array(
+			"title" 		=> "Notifikasi",
+			"menu"			=> "notification",
+			"kpi"			=> $kpi
+		);
+		$this->load->view('pages/notification-view', $data);
+	}
 }
