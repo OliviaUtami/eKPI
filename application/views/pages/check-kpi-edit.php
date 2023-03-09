@@ -316,7 +316,7 @@ $this->load->view('pages/_partials/header');
           <?php if($indicator->status=="Draft"||$indicator->status=="Menunggu Revisi"){ ?>
             htmlInp += `<input type="text" class="form-control percentage inpReal smallInput" autocomplete="off" data-detid="${obj.ind_det_id}" value="${obj.realisasi??""}"/>`;
           <?php }else{ ?>
-            htmlInp += `<span style="text-align:center;">${obj.realisasi??""}</span>`;
+            htmlInp += `<div style="text-align:center;">${obj.realisasi??""}</div>`;
           <?php } ?>
 
           if(obj.tipe_indikator=="Persentase"&&obj.realisasi!==null&&obj.realisasi!==""){
@@ -328,7 +328,7 @@ $this->load->view('pages/_partials/header');
         <?php if($indicator->status=="Draft"||$indicator->status=="Menunggu Revisi"){ ?>
           htmlInp += `<input type="text" class="form-control number inpReal smallInput" autocomplete="off" data-detid="${obj.ind_det_id}" value="${obj.realisasi??""}"/>`;
         <?php }else{ ?>
-          htmlInp += `<span style="text-align:center;">${obj.realisasi??""}</span>`;
+          htmlInp += `<div style="text-align:center;">${obj.realisasi??""}</div>`;
         <?php } ?>
 
         if(obj.tipe_indikator=="Angka"&&obj.realisasi!==null&&obj.realisasi!==""){
@@ -345,7 +345,7 @@ $this->load->view('pages/_partials/header');
           htmlInp += `</select>`;
         <?php }else{ ?>
           var selected = obj.pilihan.find(item=>item.nilai==obj.realisasi);
-          htmlInp += `<span style="text-align:center;">${selected.nama??""}</span>`;
+          htmlInp += `<div style="text-align:center;">${selected.nama??""}</div>`;
         <?php } ?>
         if(obj.realisasi!==null){
           nilai = parseInt(obj.realisasi);

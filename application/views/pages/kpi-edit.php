@@ -131,9 +131,13 @@ $this->load->view('pages/_partials/header');
           <div class="card-body">
             <div class="row">
               <div class="form-group col-md-5">
-                  <label>Periode Pengisian</label>
-                  <input type="text" class="form-control" id="name" name="name" autocomplete="off" value="<?php echo ($indicator->period_from." - ".$indicator->period_to); ?>" readonly>
+                  <label>Nama</label>
+                  <input type="text" class="form-control" id="name" name="name" autocomplete="off" value="<?php echo ($indicator->period_name); ?>" readonly>
                   <input type="hidden" class="form-control" id="id" name="id" autocomplete="off" value="<?php echo $indicator->indicator_id; ?>" required>
+              </div>
+              <div class="form-group col-md-5">
+                  <label>Periode Pengisian</label>
+                  <input type="text" class="form-control" id="period" name="period" autocomplete="off" value="<?php echo ($indicator->period_from." - ".$indicator->period_to); ?>" readonly>
               </div>
             </div>
             <?php if($indicator->status=="Belum Ada"||$indicator->status=="Draft"||$indicator->status=="Menunggu Revisi"){ ?>
@@ -529,7 +533,7 @@ $this->load->view('pages/_partials/header');
           console.log(data);
           alert(data.message);
           if(data.ok==1){
-            location.reload();
+            window.location.replace("<?php echo base_url(); ?>kpi");
           }
         },
         error: function(data) {

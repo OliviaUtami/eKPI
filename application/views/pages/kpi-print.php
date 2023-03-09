@@ -61,7 +61,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
                   <td colspan="6" style="text-align: left;"><b><?php echo ($indicator->period_from." - ".$indicator->period_to); ?></b></td>
                 </tr>
                 <tr>
-                  <td style="width: 90px;"><b>Organisasi </b></td>
+                  <td style="width: 90px;"><b>Unit </b></td>
                   <td colspan="6" style="text-align: left;"><b><?php echo ($indicator->org_name); ?></b></td>
                 </tr>
                 <tr>
@@ -136,9 +136,9 @@ defined('BASEPATH') OR exit('No direct script access allowed');
     };
     row++;
 
-    //ORGANISASI
+    //UNIT
     ws.mergeCells(`B${row}:G${row}`);
-    ws.getCell(`A${row}`).value = "Organisasi";
+    ws.getCell(`A${row}`).value = "Unit";
     ws.getCell(`A${row}`).font = {
       name: 'Calibri',
       family: 4,

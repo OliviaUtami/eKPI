@@ -18,10 +18,10 @@ $this->load->view('pages/_partials/header');
                         <input type="text" class="form-control" name="name" autocomplete="off" required>
                     </div>
                   </div>
-                  <div class="row">
+                  <div class="row" style="display:none">
                     <div class="form-group col-md-5">
                       <label>Hirarki</label>
-                      <input type="text" class="form-control" name="hierarchy" id="hierarchy" autocomplete="off" required>
+                      <input type="text" class="form-control" name="hierarchy" id="hierarchy" autocomplete="off">
                     </div>
                   </div>
                 </div>
@@ -60,7 +60,7 @@ $this->load->view('pages/_partials/header');
 			messages: {
 				name: "Silahkan isi nama",
         email: "Silahkan isi alamat email yang valid",
-        organization: "Silihakan pilih organisasi",
+        organization: "Silihakan pilih unit",
         role: "Silahkan pilih role",
 				username: {
 					required: "Silahkan masukkan username",

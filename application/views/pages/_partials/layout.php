@@ -3,15 +3,18 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 $this->load->helper('cookie'); 
 ?>
 <script>
-function markAsRead() {
+function markAsRead($id=null) {
+  var param = {
+    id: $id
+  }
   $.ajax({
       url: '<?php echo base_url(); ?>notification/markasread',
       type: 'POST',
-      data: "",
+      data: JSON.stringify(param),
       dataType : "json",
       contentType: "application/json; charset=utf-8",
       success: function(data) {
-        if(data.ok==1){
+        if(data.ok=="ok"){
           window.location.reload();
         }
       },
@@ -34,11 +37,12 @@ function markAsRead() {
         <ul class="navbar-nav navbar-right">
           <li class="dropdown dropdown-list-toggle"><a href="#" data-toggle="dropdown" style="top: 5px;position: relative;" class="nav-link notification-toggle nav-link-lg <?php if(isset($_SESSION['notif'])&&count($_SESSION['notif'])>0) { echo "beep"; } ?>"><i class="far fa-bell"></i></a>
             <div class="dropdown-menu dropdown-list dropdown-menu-right">
-              <div class="dropdown-header">Notifications
+              <div class="dropdown-header">Notifikasi
                 <div class="float-right">
-                  <a href="#" onclick="markAsRead();">Mark All As Read</a>
+                  <a href="javascript:window.location.reload();" title="Muat Ulang"><i class="fas fa-sync"></i></a>
                 </div>
               </div>
+              <?php if(isset($_SESSION['notif'])&&count($_SESSION['notif'])>0) { ?>
               <div class="dropdown-list-content dropdown-list-icons">
                 <?php
                   foreach($_SESSION['notif'] as $notif){
@@ -53,13 +57,16 @@ function markAsRead() {
                     <div class="time"><?php echo $notif->tstamp; ?></div>
                   </div>
                 </a>
-                <?php
-                  } 
-                ?>
-                
+                <?php } ?>
               </div>
+              <?php } else { ?>
+                <div class="dropdown-list-content dropdown-list-icons">
+                  <div style="text-align: center;font-size: 15px;">Tidak ada notifikasi baru</div>
+                </div>
+              <?php } ?>
               <div class="dropdown-footer text-center">
-                <a href="javascript:window.location.reload();">Refresh</a>
+                <a href="#" onclick="markAsRead();" title="Tandai telah dibaca" style="float: left; margin: 5px;"><i class="fas fa-check-double"></i> Tandai Dibaca</a>
+                <a href="<?php echo base_url(); ?>notification"  title="Lihat semua" style="float: right; margin: 5px;">Semua Notifikasi <i class="fas fa-arrow-circle-right"></i></a>
               </div>
             </div>
           </li>

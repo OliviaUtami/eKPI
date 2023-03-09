@@ -2,12 +2,7 @@
 defined('BASEPATH') OR exit('No direct script access allowed');
 ?>
       <footer class="main-footer">
-        <div class="footer-left">
-          
-        </div>
-        <div class="footer-right">
-          
-        </div>
+          Copyright &copy; Stisla 2018
       </footer>
     </div>
   </div>

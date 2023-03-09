@@ -2,9 +2,11 @@
 class indicator_model extends CI_Model {
   public function get_org_active_period_indicators($org_id){
     $sql = "SELECT 
-              p.period_id, DATE_FORMAT(period_from, '%d/%m/%Y') period_from, DATE_FORMAT(period_to, '%d/%m/%Y') period_to, 
-              p.draft_id, i.indicator_id, i.org_id, coalesce(i.status,'Belum Ada') status, i.created_by, DATE_FORMAT(i.created_at, '%d/%m/%Y %H:%i:%s') created_at
+              p.period_id, DATE_FORMAT(period_from, '%d/%m/%Y') period_from, DATE_FORMAT(period_to, '%d/%m/%Y') period_to, p.name period_name,
+              p.draft_id, d.name draft_name,
+              i.indicator_id, i.org_id, coalesce(i.status,'Belum Ada') status, i.created_by, DATE_FORMAT(i.created_at, '%d/%m/%Y %H:%i:%s') created_at
             FROM period p 
+            JOIN draft d on p.draft_id = d.draft_id
             LEFT JOIN indicator i ON p.draft_id = i.draft_id and i.org_id = ?
             WHERE DATE(SYSDATE()) BETWEEN p.period_from AND p.period_to AND p.status = 'Aktif' ";
     $data = $this->db->query($sql, array($org_id))->result();
@@ -12,9 +14,9 @@ class indicator_model extends CI_Model {
   }
   public function get_indicator_by_draft_org($draft_id, $org_id){
     $sql = "SELECT 
-              p.period_id, DATE_FORMAT(period_from, '%d/%m/%Y') period_from, DATE_FORMAT(period_to, '%d/%m/%Y') period_to, 
+              p.period_id, DATE_FORMAT(period_from, '%d/%m/%Y') period_from, DATE_FORMAT(period_to, '%d/%m/%Y') period_to, p.name period_name, 
               p.draft_id, i.indicator_id, i.org_id, coalesce(i.status,'Belum Ada') status, i.created_by, DATE_FORMAT(i.created_at, '%d/%m/%Y %H:%i:%s') created_at,
-              i.remarks
+              i.remarks, i.uid
             FROM period p 
             LEFT JOIN indicator i ON p.draft_id = i.draft_id AND i.org_id = ?
             WHERE DATE(SYSDATE()) BETWEEN p.period_from AND p.period_to AND p.status = 'Aktif' AND p.draft_id = ? ";
@@ -25,8 +27,7 @@ class indicator_model extends CI_Model {
                 FROM `target` t
                 JOIN `purpose` p ON  t.purpose_id = p.purpose_id
                 JOIN `mission` m on p.mission_id = m.mission_id
-                LEFT JOIN `indicator` i on m.draft_id = i.draft_id
-                WHERE m.draft_id = ?
+                WHERE m.draft_id = ? 
                 ORDER BY t.target_id ASC";
     $targets = $this->db->query($sqlTarget,array($draft_id))->result();
     $tempid = 1;
@@ -316,6 +317,16 @@ class indicator_model extends CI_Model {
                   status = ?
               WHERE indicator_id = ?";
       $this->db->query($sql, array($_SESSION["username"], "Menunggu Persetujuan", $indicator_id));
+      $org = $this->db->query("select org_name from organization where org_id = ? ",$_SESSION["org_id"])->row();
+      
+      //notif
+      $title = "Pengumpulan Indikator KPI untuk Unit ".$org->org_name;
+      $content = "User ".$_SESSION["name"]." telah mengirimkan Indikator KPI pada ". (new \DateTime())->format('d/m/Y H:i:s').". Silahkan melakukan pengecekan indikator KPI pada menu yang tersedia. ";
+      $this->db->query("INSERT INTO notification (userid, username, type, title, content, tstamp, byuser) 
+                        select u.user_id, u.username, 'INDICATOR_SUBMISSION', ?, ?, ?, ? 
+                        from user u 
+                        join organization o on u.org_id = o.org_id
+                        where u.org_id = 23 and u.is_active = 1", array($title, $content, date('Y-m-d H:i:s'), $_SESSION["username"]));      
     }else{
       $message = "Gagal melakukan pengajuan. Status draft adalah".$res->status."";
     }
@@ -328,11 +339,12 @@ class indicator_model extends CI_Model {
 
   public function get_indicator_approval(){
     $sql = "SELECT 
-            indicator_id, i.draft_id, org_id, i.status, DATE_FORMAT(i.created_at, '%d/%m/%Y %H:%i:%s') created_at, i.created_by, 
+            indicator_id, i.draft_id, i.org_id, i.status, DATE_FORMAT(i.created_at, '%d/%m/%Y %H:%i:%s') created_at, i.created_by, 
             DATE_FORMAT(i.approved_at, '%d/%m/%Y %H:%i:%s') approved_at, i.approved_by, 
             p.name period_name, DATE_FORMAT(p.period_from, '%d/%m/%Y') period_from, DATE_FORMAT(p.period_to, '%d/%m/%Y') period_to,
-            i.uid
+            i.uid, o.org_name
           FROM indicator i
+          JOIN organization o on i.org_id = o.org_id
           JOIN period p on i.draft_id = p.draft_id
           WHERE p.status = 'Aktif' and i.status IN ('Menunggu Persetujuan','Disetujui')
           ORDER BY indicator_id DESC";
@@ -341,7 +353,7 @@ class indicator_model extends CI_Model {
 
   public function get_indicator_approval_by_uid($uid){
     $sql = "SELECT 
-              p.period_id, DATE_FORMAT(period_from, '%d/%m/%Y') period_from, DATE_FORMAT(period_to, '%d/%m/%Y') period_to, 
+              p.period_id, p.name period_name, DATE_FORMAT(period_from, '%d/%m/%Y') period_from, DATE_FORMAT(period_to, '%d/%m/%Y') period_to, 
               p.draft_id, i.indicator_id, i.org_id, coalesce(i.status,'Belum Ada') status, i.created_by, DATE_FORMAT(i.created_at, '%d/%m/%Y %H:%i:%s') created_at,
               i.remarks, i.uid
             FROM period p 

@@ -7,7 +7,7 @@ class organization_model extends CI_Model {
     $message = ""; $ok = 1;
     $exist = $this->db->query("SELECT COUNT(1) count FROM organization WHERE hierarchy = ? and is_active = 1",array($hierarchy))->row();
 
-    if((int) $exist->count > 0){
+    if(1==0){
       $message = "Organization with same hierarchy exists";
     }else{
       $sql = "INSERT INTO organization
@@ -26,7 +26,7 @@ class organization_model extends CI_Model {
     $message = ""; $ok = 1;
     $exist = $this->db->query("SELECT COUNT(1) count FROM organization WHERE hierarchy = ? and is_active = 1 and org_id <> ?",array($hierarchy, $id))->row();
 
-    if((int) $exist->count > 0){
+    if(1==0){
       $ok = 0;
       $message = "Organization with same hierarchy exists";
     }else{

@@ -37,6 +37,31 @@ class Pages extends CI_Controller {
 			redirect('/login', 'refresh');
 		}
 	}
+	private function check_access() {
+		$check = $this->user_model->check_access($this->uri->segment(1));
+		if($check>0){
+
+		}else{
+			header("HTTP/1.1 403 Forbidden");
+			$data = array(
+				"title" 	=> "Error 403 Forbidden",
+				"menu"		=> ""
+			);
+			$this->load->view('pages/errors-403',$data);
+			$this->output->_display();
+			die;
+		}
+		//cari ditable access apakah user punya akses ke sana
+	}
+	private function check_access_api() {
+		$check = $this->user_model->check_access($this->uri->segment(1));
+		if($check>0){
+
+		}else{
+			return false;
+		}
+		//cari ditable access apakah user punya akses ke sana
+	}
 	private function check_login_api() {
 		if(!$this->session->has_userdata('username')){
 			return false;
@@ -45,8 +70,12 @@ class Pages extends CI_Controller {
 	}
 	public function mark_as_read(){
 		$this->load->model('user_model');
-		$this->user_model->mark_as_read();
+		$json = file_get_contents('php://input');
+		$obj = json_decode($json);
+		$id = $obj->id;
+		$data = $this->user_model->mark_as_read($id);
 		$_SESSION["notif"]=[];
+		echo json_encode($data);
 	}
 
 	/** PAGE ORG - START */
@@ -61,11 +90,12 @@ class Pages extends CI_Controller {
 	/** PAGE ORG - START */
 	public function view_org_list() {
 		$this->check_login();
+		$this->check_access();
 		$this->load->model('organization_model');
 		$orgs = $this->organization_model->get_organizations();
 
 		$data = array(
-			"title" 	=> "Daftar Organisasi",
+			"title" 	=> "Daftar Unit",
 			"menu"		=> "org",
 			"data"		=> $orgs
 		);
@@ -74,8 +104,9 @@ class Pages extends CI_Controller {
 
 	public function view_org_add() {
 		$this->check_login();
+		$this->check_access();
 		$data = array(
-			"title" 		=> "Add Organization",
+			"title" 		=> "Tambah Unit",
 			"menu"			=> "org"
 		);
 		$this->load->view('pages/org-add', $data);
@@ -83,6 +114,7 @@ class Pages extends CI_Controller {
 
 	public function process_org_add(){
 		$this->check_login();
+		$this->check_access();
 		$this->load->model('organization_model');
 
 		$name 		= $_POST['name'];
@@ -99,11 +131,12 @@ class Pages extends CI_Controller {
 
 	public function view_org_edit($id){
 		$this->check_login();
+		$this->check_access();
 		$this->load->model('organization_model');
 
 		$org = $this->organization_model->get_organization($id);
 		$data = array(
-			"title" 		=> "Edit Organisasi",
+			"title" 		=> "Edit Unit",
 			"menu"			=> "org",
 			"data" 			=> $org
 		);
@@ -112,6 +145,7 @@ class Pages extends CI_Controller {
 
 	public function process_org_edit(){
 		$this->check_login();
+		$this->check_access();
 		$this->load->model('organization_model');
 
 		$id 		= $_POST['id'];
@@ -129,6 +163,7 @@ class Pages extends CI_Controller {
 
 	public function process_org_delete($id){
 		$this->check_login();
+		$this->check_access();
 		$this->load->model('organization_model');
 		$data = $this->organization_model->delete_org($id);
 		$this->session->set_flashdata('message', $data->message);
@@ -139,7 +174,9 @@ class Pages extends CI_Controller {
 	/** PAGE USER - START */
 	public function view_user_list() {
 		$this->check_login();
+		$this->check_access();
 		$this->load->model('user_model');
+		$this->check_access();
 		$users = $this->user_model->view_user();
 
 		$data = array(
@@ -152,6 +189,7 @@ class Pages extends CI_Controller {
 
 	public function view_user_add() {
 		$this->check_login();
+		$this->check_access();
 		$this->load->model('role_model');
 		$this->load->model('organization_model');
 
@@ -169,6 +207,7 @@ class Pages extends CI_Controller {
 
 	public function process_user_add(){
 		$this->check_login();
+		$this->check_access();
 		$this->load->model('user_model');
 
 		$name 		= $_POST['name'];
@@ -192,6 +231,7 @@ class Pages extends CI_Controller {
 
 	public function view_user_edit($id){
 		$this->check_login();
+		$this->check_access();
 		$this->load->model('user_model');
 		$this->load->model('role_model');
 		$this->load->model('organization_model');
@@ -213,6 +253,7 @@ class Pages extends CI_Controller {
 
 	public function process_user_edit(){
 		$this->check_login();
+		$this->check_access();
 		$user_id 	= $_POST['id'];
 		$name 		= $_POST['name'];
 		$address 	= $_POST['address'];
@@ -235,6 +276,7 @@ class Pages extends CI_Controller {
 
 	public function process_user_delete($id){
 		$this->check_login();
+		$this->check_access();
 		$this->load->model('user_model');
 		$data = $this->user_model->delete_user($id);
 		$this->session->set_flashdata('message', $data->message);
@@ -246,6 +288,7 @@ class Pages extends CI_Controller {
 	/** PAGE INDICATOR - START */
 	public function view_period_list() {
 		$this->check_login();
+		$this->check_access();
 		$this->load->model('period_model');
 		$periods = $this->period_model->get_period();
 
@@ -259,6 +302,7 @@ class Pages extends CI_Controller {
 
 	public function view_period_add() {
 		$this->check_login();
+		$this->check_access();
 		$this->load->model('period_model');
 		$this->load->model('draft_model');
 		$drafts = $this->draft_model->get_approved_draft();
@@ -272,6 +316,7 @@ class Pages extends CI_Controller {
 
 	public function process_period_add(){
 		$this->check_login();
+		$this->check_access();
 		$this->load->model('period_model');
 
 		$period_from= $_POST['period_from'];
@@ -292,6 +337,7 @@ class Pages extends CI_Controller {
 
 	public function view_period_edit($period_id) {
 		$this->check_login();
+		$this->check_access();
 		$this->load->model('period_model');
 		$perioddata = $this->period_model->get_period_by_id($period_id);
 		$this->load->model('draft_model');
@@ -307,6 +353,7 @@ class Pages extends CI_Controller {
 
 	public function process_period_edit(){
 		$this->check_login();
+		$this->check_access();
 		$this->load->model('period_model');
 
 		$period_id 	= $_POST['id'];
@@ -329,6 +376,7 @@ class Pages extends CI_Controller {
 	/** PAGE DRAFT - START */
 	public function view_draft_list() {
 		$this->check_login();
+		$this->check_access();
 		$this->load->model('draft_model');
 
 		$drafts = $this->draft_model->get_draft();
@@ -342,6 +390,7 @@ class Pages extends CI_Controller {
 	}
 	public function view_draft_add() {
 		$this->check_login();
+		$this->check_access();
 		$this->load->model('draft_model');
 
 		$data = array(
@@ -351,7 +400,7 @@ class Pages extends CI_Controller {
 		$this->load->view('pages/draft-add', $data);
 	}
 	public function process_draft_add(){
-		if(!$this->check_login_api()){
+		if(!$this->check_login_api()||!$this->check_access_api()){
 			return false;
 		}
 		$this->load->model('draft_model');
@@ -367,6 +416,7 @@ class Pages extends CI_Controller {
 	}
 	public function view_draft_edit($draft_id) {
 		$this->check_login();
+		$this->check_access();
 		$this->load->model('draft_model');
 
 		$draft_data = $this->draft_model->get_draft_by_id($draft_id);
@@ -379,7 +429,7 @@ class Pages extends CI_Controller {
 		$this->load->view('pages/draft-edit', $data);
 	}
 	public function process_draft_edit(){
-		if(!$this->check_login_api()){
+		if(!$this->check_login_api()||!$this->check_access_api()){
 			return false;
 		}
 		$this->load->model('draft_model');
@@ -395,6 +445,7 @@ class Pages extends CI_Controller {
 
 	public function process_draft_delete($id){
 		$this->check_login();
+		$this->check_access();
 		$this->load->model('draft_model');
 		$data = $this->draft_model->delete_draft($id);
 		$this->session->set_flashdata('message', $data->message);
@@ -403,6 +454,7 @@ class Pages extends CI_Controller {
 
 	public function process_draft_rfa($id){
 		$this->check_login();
+		$this->check_access();
 		$this->load->model('draft_model');
 		
 		$data = $this->draft_model->rfa_draft($id);
@@ -413,6 +465,7 @@ class Pages extends CI_Controller {
 
 	public function process_draft_copy($id){
 		$this->check_login();
+		$this->check_access();
 		$this->load->model('draft_model');
 		
 		$data = $this->draft_model->copy_draft($id);
@@ -423,6 +476,7 @@ class Pages extends CI_Controller {
 	/** DRAFT APPROVAL */
 	public function view_draft_approval_list() {
 		$this->check_login();
+		$this->check_access();
 		$this->load->model('draft_model');
 		
 		$drafts = $this->draft_model->get_draft_approval();
@@ -436,6 +490,7 @@ class Pages extends CI_Controller {
 	}
 	public function view_draft_approval_edit($draft_id) {
 		$this->check_login();
+		$this->check_access();
 		$this->load->model('draft_model');
 
 		$draft_data = $this->draft_model->get_draft_by_id($draft_id);
@@ -448,7 +503,7 @@ class Pages extends CI_Controller {
 		$this->load->view('pages/appr-draft-edit', $data);
 	}
 	public function process_draft_approval_edit(){
-		if(!$this->check_login_api()){
+		if(!$this->check_login_api()||!$this->check_access_api()){
 			return false;
 		}
 		$this->load->model('draft_model');
@@ -465,6 +520,7 @@ class Pages extends CI_Controller {
 	}
 	public function cancel_draft_approval($id){
 		$this->check_login();
+		$this->check_access();
 		$this->load->model('draft_model');
 		
 		$data = $this->draft_model->cancel_draft_approval($id);
@@ -479,6 +535,7 @@ class Pages extends CI_Controller {
 	/** PAGE INDICATOR - START */
 	public function view_indicator_list() {
 		$this->check_login();
+		$this->check_access();
 		$this->load->model('user_model');
 		$this->load->model('indicator_model');
 		$user = $this->user_model->get_user_by_username($_SESSION["username"]);
@@ -495,6 +552,7 @@ class Pages extends CI_Controller {
 
 	public function view_indicator_edit($draft_id) {
 		$this->check_login();
+		$this->check_access();
 		$this->load->model('user_model');
 		$this->load->model('indicator_model');
 		$user = $this->user_model->get_user_by_username($_SESSION["username"]);
@@ -509,7 +567,7 @@ class Pages extends CI_Controller {
 	}
 	
 	public function get_program_by_target(){
-		if(!$this->check_login_api()){
+		if(!$this->check_login_api()||!$this->check_access_api()){
 			return false;
 		}
 		$this->load->model('indicator_model');
@@ -523,7 +581,7 @@ class Pages extends CI_Controller {
 	}
 
 	public function process_indicator_add(){
-		if(!$this->check_login_api()){
+		if(!$this->check_login_api()||!$this->check_access_api()){
 			return false;
 		}
 		$this->load->model('indicator_model');
@@ -541,6 +599,7 @@ class Pages extends CI_Controller {
 
 	public function process_indicator_rfa($id){
 		$this->check_login();
+		$this->check_access();
 		$this->load->model('indicator_model');
 		
 		$data = $this->indicator_model->rfa_indicator($id);
@@ -551,6 +610,7 @@ class Pages extends CI_Controller {
 
 	public function view_indicator_approval_list() {
 		$this->check_login();
+		$this->check_access();
 		$this->load->model('indicator_model');
 		
 		$periods = $this->indicator_model->get_indicator_approval();
@@ -565,6 +625,7 @@ class Pages extends CI_Controller {
 
 	public function view_indicator_approval_edit($uid) {
 		$this->check_login();
+		$this->check_access();
 		$this->load->model('user_model');
 		$this->load->model('indicator_model');
 		$user = $this->user_model->get_user_by_username($_SESSION["username"]);
@@ -578,7 +639,7 @@ class Pages extends CI_Controller {
 		$this->load->view('pages/appr-indicator-edit', $data);
 	}
 	public function process_indicator_approval_edit(){
-		if(!$this->check_login_api()){
+		if(!$this->check_login_api()||!$this->check_access_api()){
 			return false;
 		}
 		$this->load->model('indicator_model');
@@ -596,6 +657,7 @@ class Pages extends CI_Controller {
 	}
 	public function cancel_indicator_approval($id){
 		$this->check_login();
+		$this->check_access();
 		$this->load->model('indicator_model');
 		
 		$data = $this->indicator_model->cancel_indicator_approval($id);
@@ -608,6 +670,7 @@ class Pages extends CI_Controller {
 	/** PAGE KPI - START */
 	public function view_kpi_list() {
 		$this->check_login();
+		$this->check_access();
 		$this->load->model('user_model');
 		$this->load->model('kpi_model');
 		$user = $this->user_model->get_user_by_username($_SESSION["username"]);
@@ -624,6 +687,7 @@ class Pages extends CI_Controller {
 
 	public function view_kpi_add($indicator_id) {
 		$this->check_login();
+		$this->check_access();
 		$this->load->model('user_model');
 		$this->load->model('kpi_model');
 		$user = $this->user_model->get_user_by_username($_SESSION["username"]);
@@ -639,6 +703,7 @@ class Pages extends CI_Controller {
 
 	public function view_kpi_edit($uid) {
 		$this->check_login();
+		$this->check_access();
 		$this->load->model('user_model');
 		$this->load->model('kpi_model');
 		$user = $this->user_model->get_user_by_username($_SESSION["username"]);
@@ -653,7 +718,7 @@ class Pages extends CI_Controller {
 	}
 
 	public function get_indicator(){
-		if(!$this->check_login_api()){
+		if(!$this->check_login_api()||!$this->check_access_api()){
 			return false;
 		}
 		$this->load->model('kpi_model');
@@ -667,7 +732,7 @@ class Pages extends CI_Controller {
 	}
 
 	public function process_kpi_add(){
-		if(!$this->check_login_api()){
+		if(!$this->check_login_api()||!$this->check_access_api()){
 			return false;
 		}
 		$this->load->model('kpi_model');
@@ -684,6 +749,7 @@ class Pages extends CI_Controller {
 
 	public function submit_kpi($id){
 		$this->check_login();
+		$this->check_access();
 		$this->load->model('kpi_model');
 		
 		$data = $this->kpi_model->submit_kpi($id);
@@ -694,6 +760,7 @@ class Pages extends CI_Controller {
 
 	public function print_kpi($uid) {
 		$this->check_login();
+		$this->check_access();
 		$this->load->model('user_model');
 		$this->load->model('kpi_model');
 		$user = $this->user_model->get_user_by_username($_SESSION["username"]);
@@ -711,6 +778,7 @@ class Pages extends CI_Controller {
 	/** PAGE CHECK KPI - START */
 	public function view_check_kpi_list() {
 		$this->check_login();
+		$this->check_access();
 		$this->load->model('user_model');
 		$this->load->model('kpi_model');
 		$user = $this->user_model->get_user_by_username($_SESSION["username"]);
@@ -727,6 +795,7 @@ class Pages extends CI_Controller {
 
 	public function view_check_kpi_edit($uid) {
 		$this->check_login();
+		$this->check_access();
 		$this->load->model('user_model');
 		$this->load->model('kpi_model');
 		$user = $this->user_model->get_user_by_username($_SESSION["username"]);
@@ -741,7 +810,7 @@ class Pages extends CI_Controller {
 	}
 
 	public function process_check_kpi_edit(){
-		if(!$this->check_login_api()){
+		if(!$this->check_login_api()||!$this->check_access_api()){
 			return false;
 		}
 		$this->load->model('kpi_model');
@@ -759,15 +828,15 @@ class Pages extends CI_Controller {
 
 	public function view_notification_list() {
 		$this->check_login();
+		$this->check_access();
 		$this->load->model('user_model');
 		$notif = $this->user_model->get_notif($_SESSION["user_id"],"",false);
-		var_dump($notif);
 		
 		$data = array(
 			"title" 		=> "Notifikasi",
 			"menu"			=> "notification",
-			"kpi"			=> $kpi
+			"notif"			=> $notif
 		);
-		$this->load->view('pages/notification-view', $data);
+		$this->load->view('pages/notif-view', $data);
 	}
 }

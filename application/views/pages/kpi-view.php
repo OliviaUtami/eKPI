@@ -17,7 +17,8 @@ $this->load->view('pages/_partials/header');
                 <tr>
                     <th>No</th>
                     <th>Periode Pengisian</th>
-                    <th>Organisasi</th>
+                    <th>Nama</th>
+                    <th>Unit</th>
                     <th>Status</th>
                     <th>Dibuat Oleh</th>
                     <th>Tindakan</th>
@@ -28,6 +29,7 @@ $this->load->view('pages/_partials/header');
                     <tr>
                         <td></td>
                         <td><?php echo($data->period_from." - ".$data->period_to); ?></td>
+                        <td><?php echo($data->period_name); ?></td>
                         <td><?php echo($data->org_name); ?></td>
                         <td><?php echo($data->status); ?></td>
                         <td><?php echo($data->created_by."<br/>".$data->created_at); ?></td>
@@ -69,8 +71,12 @@ $this->load->view('pages/_partials/header');
 
     $(document).ready(function() {
         $("#table-list").dataTable({
-            "columnDefs": [
+          "columnDefs": [
                 { width: 20, targets: 0 },
+                { width: 180, targets: 1 },
+                { width: 300, targets: 2 },
+                { width: 80, targets: 3 },
+                { width: 80, targets: 4 },
                 { width: 30, targets: -1 }
             ],
             "fixedColumns": true,

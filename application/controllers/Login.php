@@ -23,11 +23,13 @@ class Login extends CI_Controller {
       if($tampung !== null){
         $user_id    = $tampung->user_id;
         $username   = $tampung->username;
+        $name   = $tampung->name;
         $role_id    = $tampung->role_id;
         $org_id     = $tampung->org_id;
         $newdata = array(
                 'user_id'  => $user_id,
                 'username'  => $username,
+                'name'  => $name,
                 'role_id' => $role_id,
                 'org_id' => $org_id,
                 'logged_in_at' => time(),

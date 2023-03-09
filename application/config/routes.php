@@ -54,7 +54,7 @@ $route['default_controller'] = 'pages';
 $route['404_override'] = '';
 $route['translate_uri_dashes'] = FALSE;
 $route['login'] = 'pages/login';
-$route['notification/markasread']['post'] = 'pages/mark_as_read';
+
 //user
 $route['user'] = 'pages/view_user_list';
 $route['user/add'] = 'pages/view_user_add';
@@ -120,11 +120,11 @@ $route['kpi/print/(:any)'] = 'pages/print_kpi/$1';
 
 //kpi
 $route['check-kpi'] = 'pages/view_check_kpi_list';
-$route['check-kpi/edit/(:num)'] = 'pages/view_check_kpi_edit/$1';
+$route['check-kpi/edit/(:any)']['get'] = 'pages/view_check_kpi_edit/$1';
 $route['check-kpi/edit/process']['post'] = 'pages/process_check_kpi_edit';
 $route['check-kpi/cancel/(:num)'] = 'pages/cancel_draft_approval/$1';
 
 //notification
 $route['notification'] = 'pages/view_notification_list';
-
+$route['notification/markasread']['post'] = 'pages/mark_as_read';
 //$route['kpi/api/remove_doc']['post'] = 'pages/remove_doc';

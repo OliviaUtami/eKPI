@@ -165,6 +165,10 @@ $this->load->view('pages/_partials/header');
           <div class="card-body">
             <div class="row">
               <div class="form-group col-md-5">
+                  <label>Nama</label>
+                  <input type="text" class="form-control" id="name" name="name" autocomplete="off" value="<?php echo ($indicator->period_name); ?>" readonly>
+              </div>
+              <div class="form-group col-md-5">
                   <label>Periode Pengisian</label>
                   <input type="text" class="form-control" id="name" name="name" autocomplete="off" value="<?php echo ($indicator->period_from." - ".$indicator->period_to); ?>" readonly>
                   <input type="hidden" class="form-control" id="id" name="id" autocomplete="off" value="<?php echo $indicator->draft_id; ?>" required>

@@ -18,7 +18,6 @@ $this->load->view('pages/_partials/header');
                 <tr>
                     <th>No</th>
                     <th>Nama</th>
-                    <th>Hirarki</th>
                     <th>Tindakan</th>
                 </tr>
             </thead>
@@ -27,7 +26,6 @@ $this->load->view('pages/_partials/header');
                     <tr>
                         <td></td>
                         <td><?php echo($obj->org_name); ?></td>
-                        <td><?php echo($obj->hierarchy); ?></td>
                         <td>
                           <button class="btn btn-sm btn-warning" onclick="editOrg(<?php echo $obj->org_id; ?>)" title="Edit"><i class="fa fa-edit"></i></button>
                           <button class="btn btn-sm btn-danger" onclick="deleteOrg(<?php echo $obj->org_id; ?>)" title="Set Inactive">&nbsp;<i class="fa fa-times"></i>&nbsp;</button>
@@ -66,6 +64,10 @@ $this->load->view('pages/_partials/header');
     }
     $(document).ready(function() {
         $("#table-users").dataTable({
+            "columnDefs": [
+                { width: 20, targets: 0 },
+                { width: 30, targets: -1 }
+            ],
             "fnRowCallback": function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
                 $('td:eq(0)', nRow).html(iDisplayIndexFull +1);
             }

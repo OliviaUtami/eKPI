@@ -120,30 +120,43 @@ class user_model extends CI_Model {
     }
     if($read!==""){
       $sql = "select idnotification, userid, username, type, title, content, DATE_FORMAT(tstamp, '%d/%m/%Y %H:%i:%s') tstamp, byuser, isread, readon 
-            from notification 
-            where userid = ? and isread = ? order by tstamp desc ".$limitstr;
+            from notification n 
+            where userid = ? and isread = ? order by n.tstamp desc ".$limitstr;
       $data = $this->db->query($sql, array($user_id,$read))->result();
     }else{
-      $sql = "select idnotification, userid, username, type, title, content, tstamp, byuser, isread, readon 
-            from notification 
-            where userid = ? order by tstamp desc ".$limitstr;
+      $sql = "select idnotification, userid, username, type, title, content, DATE_FORMAT(tstamp, '%d/%m/%Y %H:%i:%s') tstamp, byuser, isread, readon 
+            from notification n 
+            where userid = ? order by n.tstamp desc ".$limitstr;
       $data = $this->db->query($sql, array($user_id))->result();
     }
     return $data;
   }
 
-  public function mark_as_read(){
+  public function mark_as_read($id){
     try {
-      $this->db->trans_start();
-      $this->db->query("update notification
-                        set isread = 1, readon = now()
-                        where userid = ? and isread = 0 and tstamp < now()", array($_SESSION["user_id"]));
-      $this->db->trans_commit();
-      
-      $data = (object) [
-        "ok"      => "ok",
-        "message" => ""
-      ];
+      if($id==null){
+        $this->db->trans_start();
+        $this->db->query("update notification
+                          set isread = 1, readon = now()
+                          where userid = ? and isread = 0 and tstamp < now()", array($_SESSION["user_id"]));
+        $this->db->trans_commit();
+        
+        $data = (object) [
+          "ok"      => "ok",
+          "message" => ""
+        ];
+      }else{
+        $this->db->trans_start();
+        $this->db->query("update notification
+                          set isread = 1, readon = now()
+                          where idnotification = ? and isread = 0 and tstamp < now()", array($id));
+        $this->db->trans_commit();
+        
+        $data = (object) [
+          "ok"      => "ok",
+          "message" => ""
+        ];
+      }
       return $data;
     }catch (Exception $e) {
       $this->db->trans_rollback();
@@ -152,5 +165,16 @@ class user_model extends CI_Model {
         "message" => '%s : %s : Transaction failed. Error no: %s, Error msg:%s', __CLASS__, __FUNCTION__, $e->getCode(), $e->getMessage()
       ];
     } 
+  }
+
+  public function check_access($url){
+    $role_id    = $_SESSION["role_id"];
+    $org_id     = $_SESSION["org_id"];
+    $sql = "select count(1) cnt
+            from access_menu am
+            join menu m on am.menu_id = m.menu_id
+            where org_id = ? and role_id = ? and m.url = ?";
+    $data = $this->db->query($sql, array($org_id,$role_id,$url))->row();
+    return $data->cnt;
   }
 }

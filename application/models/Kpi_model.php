@@ -4,7 +4,7 @@ class kpi_model extends CI_Model {
 
   public function get_my_kpi($user_id){
     $sql = "SELECT 
-              p.period_id, 
+              p.period_id, p.name period_name,
               DATE_FORMAT(period_from, '%d/%m/%Y') period_from, DATE_FORMAT(period_to, '%d/%m/%Y') period_to, 
               d.draft_id, i.indicator_id, i.org_id, 
               iu.ind_user_id, iu.user_id, coalesce(iu.status,'Belum Ada') status, 
@@ -16,10 +16,10 @@ class kpi_model extends CI_Model {
             JOIN user u ON i.org_id = u.org_id
             JOIN organization o ON u.org_id = o.org_id
             LEFT JOIN indicator_user iu ON i.indicator_id = iu.indicator_id and u.user_id = iu.user_id
-            WHERE u.user_id = ? and iu.ind_user_id is null
+            WHERE u.user_id = ? and iu.ind_user_id is null and p.status = 'Aktif'
             UNION
             SELECT 
-              p.period_id, 
+              p.period_id, p.name period_name,
               DATE_FORMAT(period_from, '%d/%m/%Y') period_from, DATE_FORMAT(period_to, '%d/%m/%Y') period_to, 
               d.draft_id, i.indicator_id, i.org_id, 
               iu.ind_user_id, iu.user_id, coalesce(iu.status,'Belum Ada') status, 
@@ -31,7 +31,7 @@ class kpi_model extends CI_Model {
             JOIN period p  ON p.draft_id = d.draft_id
             JOIN user u ON iu.user_id = u.user_id
             JOIN organization o ON i.org_id = o.org_id
-            WHERE u.user_id = ? 
+            WHERE u.user_id = ? and p.status = 'Aktif'
             ORDER BY period_from DESC";
     $data = $this->db->query($sql, array($user_id,$user_id))->result();
     return $data;
@@ -43,7 +43,7 @@ class kpi_model extends CI_Model {
               p.period_id, DATE_FORMAT(period_from, '%d/%m/%Y') period_from, DATE_FORMAT(period_to, '%d/%m/%Y') period_to, 
               p.draft_id, i.indicator_id, i.org_id, coalesce(iu.status,'Belum Ada') status, 
               iu.created_by, DATE_FORMAT(iu.created_at, '%d/%m/%Y %H:%i:%s') created_at,
-              o.org_name, u.name, iu.remarks
+              o.org_name, u.name, iu.remarks, iu.uid
             FROM indicator i
             JOIN period p on p.draft_id = i.draft_id
             JOIN organization o on i.org_id = o.org_id
@@ -92,7 +92,7 @@ class kpi_model extends CI_Model {
               p.period_id, DATE_FORMAT(period_from, '%d/%m/%Y') period_from, DATE_FORMAT(period_to, '%d/%m/%Y') period_to, 
               p.draft_id, i.indicator_id, i.org_id, coalesce(iu.status,'Belum Ada') status, 
               iu.created_by, DATE_FORMAT(iu.created_at, '%d/%m/%Y %H:%i:%s') created_at,
-              o.org_name, u.name, iu.remarks, iu.ind_user_id
+              o.org_name, u.name, iu.remarks, iu.ind_user_id, iu.uid
             FROM indicator i
             JOIN period p on p.draft_id = i.draft_id
             JOIN organization o on i.org_id = o.org_id
@@ -175,6 +175,7 @@ class kpi_model extends CI_Model {
       $message = ""; $ok = 1;
       $indikator = $reqdata->data;
       $indikator_id = $reqdata->id;
+      //var_dump($indikator_id);
       $used = $this->db->query("SELECT count(1) cnt FROM indicator_user WHERE user_id = ? and indicator_id = ?",array($user->user_id, $indikator_id))->row();
       if($used->cnt>0){//update
         $existing = $this->db->query("SELECT ind_user_id FROM indicator_user WHERE user_id = ? and indicator_id = ?",array($user->user_id, $indikator_id))->row();        
@@ -264,9 +265,9 @@ class kpi_model extends CI_Model {
         $message = "KPI berhasil disimpan";
       }else{
         $sql = "INSERT INTO indicator_user 
-                  (indicator_id, user_id, created_by, status, uid)
-                VALUES (?, ?, ?, ?, ?)";
-        $this->db->query($sql, array($indikator_id, $user->user_id, $user->username, "Draft", bin2hex(random_bytes(20))));
+                  (indicator_id, user_id, created_by, status, uid, user_role_id)
+                VALUES (?, ?, ?, ?, ?, ?)";
+        $this->db->query($sql, array($indikator_id, $user->user_id, $user->username, "Draft", bin2hex(random_bytes(20)), $_SESSION["role_id"]));
         $ind_user_id = $this->db->insert_id();
         for($i=0;$i<count($indikator);$i++){
           $obj = $indikator[$i];
@@ -391,7 +392,7 @@ class kpi_model extends CI_Model {
               d.draft_id, i.indicator_id, i.org_id, 
               iu.ind_user_id, iu.user_id, coalesce(iu.status,'Belum Ada') status, 
               iu.remarks, i.created_by, DATE_FORMAT(i.created_at, '%d/%m/%Y %H:%i:%s') created_at,
-              u.user_id, u.username, u.name, o.org_name
+              u.user_id, u.username, u.name, o.org_name, iu.uid
             FROM indicator_user iu
             JOIN indicator i ON iu.indicator_id = i.indicator_id and i.status = 'Disetujui'
             JOIN draft d ON i.draft_id = d.draft_id

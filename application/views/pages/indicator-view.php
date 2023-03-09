@@ -17,6 +17,7 @@ $this->load->view('pages/_partials/header');
                 <tr>
                     <th>No</th>
                     <th>Periode Pengisian</th>
+                    <th>Nama</th>
                     <th>Status</th>
                     <th>Dibuat Oleh</th>
                     <th>Tindakan</th>
@@ -27,6 +28,7 @@ $this->load->view('pages/_partials/header');
                     <tr>
                         <td></td>
                         <td><?php echo($data->period_from." - ".$data->period_to); ?></td>
+                        <td><?php echo($data->period_name); ?></td>
                         <td><?php echo($data->status); ?></td>
                         <td><?php echo($data->created_by."<br/>".$data->created_at); ?></td>
                         <td>
@@ -69,6 +71,10 @@ $this->load->view('pages/_partials/header');
         $("#table-list").dataTable({
             "columnDefs": [
                 { width: 20, targets: 0 },
+                { width: 180, targets: 1 },
+                { width: 300, targets: 2 },
+                { width: 80, targets: 3 },
+                { width: 80, targets: 4 },
                 { width: 30, targets: -1 }
             ],
             "fixedColumns": true,
@@ -88,7 +94,7 @@ $this->load->view('pages/_partials/header');
     }
 
     function reqAppr(indicator_id){
-      if(confirm("Ajukan indikator kinerja program KPI ke WR agar bisa digunakan tim dalam pengisian KPI ?\n"))
+      if(confirm("Ajukan indikator kinerja program KPI ke HROD agar bisa digunakan tim dalam pengisian KPI ?\n"))
         window.location.replace("indicator/rfa/"+indicator_id);
     }
 </script>
