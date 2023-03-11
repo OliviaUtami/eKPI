@@ -73,4 +73,17 @@ table.dataTable thead .sorting::before, table.dataTable thead .sorting::after, t
     height: auto !important;
     max-height: 350px !important;
     overflow: hidden;
-  }
+}
+
+.btn-success{
+    box-shadow: 0 2px 6px #a8f5b4;
+    background-color: #18c199;
+    border-color: #398b88;
+    color: #fff;
+}
+.btn-success:hover{
+    box-shadow: 0 2px 6px #a8f5b4;
+    background-color: #18c199;
+    border-color: #398b88;
+    color: #fff;
+}

@@ -4,7 +4,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 <style>
   table, tr, td, th {
     border-collapse: collapse;
-    border: 1px solid;
+    border: 1px solid #dee2e6 !important;
     font-size: 12px;
   }
   .center{
@@ -14,6 +14,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
     padding: 4px !important;
     font-size: 12px;
   }
+  
   @media print{
     body * {
       visibility: hidden;
@@ -28,18 +29,25 @@ defined('BASEPATH') OR exit('No direct script access allowed');
     }
     table, tr, td, th {
       border-collapse: collapse;
-      border: 1px solid;
-      font-size: 12px;
-    }
-    table td {
-      padding: 4px !important;
+      border: 1px solid #000000 !important;
       font-size: 12px;
     }
     .center{
       text-align: center;
     }
+    table td {
+      padding: 4px !important;
+      font-size: 12px;
+    }
+  }
+  @page {
+    size: a4 landscape !important;
   }
 </style>
+
+<link rel="stylesheet" href="<?php echo base_url(); ?>assets/modules/bootstrap/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.0/css/all.min.css" integrity="sha512-3PN6gfRNZEX4YFyz+sIyTF6pGlQiryJu9NlGhu9LrLMQ7eDjNgudQoFDK3WSNAayeIKc6B8WXXpo4a7HqxjKwg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  
 <script>
   var indikator = [];
   var tempid = 1;
@@ -57,28 +65,36 @@ defined('BASEPATH') OR exit('No direct script access allowed');
                   <td colspan="7"><b><?php echo ($indicator->period_name); ?></b></td>
                 </tr>
                 <tr>
-                  <td style="width: 90px;"><b>Periode </b></td>
+                  <td style="width: 75px;"><b>Periode </b></td>
                   <td colspan="6" style="text-align: left;"><b><?php echo ($indicator->period_from." - ".$indicator->period_to); ?></b></td>
                 </tr>
                 <tr>
-                  <td style="width: 90px;"><b>Unit </b></td>
+                  <td style="width: 75px;"><b>Unit </b></td>
                   <td colspan="6" style="text-align: left;"><b><?php echo ($indicator->org_name); ?></b></td>
                 </tr>
                 <tr>
-                  <td style="width: 90px;"><b>Nama </b></td>
+                  <td style="width: 75px;"><b>Nama </b></td>
                   <td colspan="6" style="text-align: left;"><b><?php echo ($indicator->name); ?></b></td>
                 </tr>
             </table>
           </div>
           <div class="card-footer bg-whitesmoke">
-            <button id="btnExport" class="btn green btn-xs" onclick="makeExcel()">Export To Excel<i class="fa fa-expand"></i></button>
+            <button id="btnExport" class="btn btn-sm btn-primary" onclick="makeExcel()" style="height: 24px; line-height: 14px; font-size: 12px; background-color: #6777ef;">
+              Export To Excel&nbsp;&nbsp;<i class="fas fa-file-export"></i>
+            </button>
+            <button id="btnPrint" class="btn btn-sm btn-primary" onclick="window.print()" style="height: 24px; line-height: 14px; font-size: 12px; background-color: #6777ef;">
+              Print&nbsp;&nbsp;<i class="fas fa-print"></i>
+            </button>
+            <button id="btnClose" class="btn btn-sm btn-danger" onclick="window.close();" style="height: 24px; line-height: 14px; font-size: 12px; background-color: #e84755;">
+              Close&nbsp;&nbsp;<i class="fas fa-times"></i>
+            </button>
           </div>
         </div>
       </form>
     </div>
   </section>
 </div>
-<?php $this->load->view('pages/_partials/footer'); ?>
+<?php $this->load->view('pages/_partials/js'); ?>
 <script>
   function makeExcel(){
     const wb = new ExcelJS.Workbook();
@@ -569,7 +585,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
         countsasaran++;
         grandtotal+=Math.round(totalpersasaran/count*100)/100;
            
-        html += `<tr style="background-color: aliceblue;">
+        html += `<tr style="background-color: #f9f8ff;">
                   <td colspan="5" style="text-align: right">JUMLAH</td>
                   <td class="center"><span class="spanNilai">${Math.round(totalpersasaran/count*100)/100}</span></td>
                   <td></td>

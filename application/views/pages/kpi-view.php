@@ -100,7 +100,7 @@ $this->load->view('pages/_partials/header');
     }
 
     function print(uid){
-      window.location.assign("kpi/print/"+uid);
+      window.open("kpi/print/"+uid, "_blank", "toolbar=no,scrollbars=yes,resizable=yes,top=100,left=100,width=1200,height=600"); 
     }
 
     function sendKPI(uid){

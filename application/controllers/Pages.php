@@ -2,6 +2,7 @@
 defined('BASEPATH') OR exit('No direct script access allowed');
 
 class Pages extends CI_Controller {
+	private $allow_access = array("notification");
 	public function __construct()
 	{
 			parent::__construct();
@@ -39,7 +40,7 @@ class Pages extends CI_Controller {
 	}
 	private function check_access() {
 		$check = $this->user_model->check_access($this->uri->segment(1));
-		if($check>0){
+		if($check>0||in_array($this->uri->segment(1), $this->allow_access)){
 
 		}else{
 			header("HTTP/1.1 403 Forbidden");
@@ -56,7 +57,7 @@ class Pages extends CI_Controller {
 	private function check_access_api() {
 		$check = $this->user_model->check_access($this->uri->segment(1));
 		if($check>0){
-
+			return true;
 		}else{
 			return false;
 		}
