@@ -782,16 +782,39 @@ class Pages extends CI_Controller {
 		$this->check_access();
 		$this->load->model('user_model');
 		$this->load->model('kpi_model');
+		$this->load->model('period_model');
+		$this->load->model('organization_model');
 		$user = $this->user_model->get_user_by_username($_SESSION["username"]);
 		//var_dump($user);
 		$kpi = $this->kpi_model->get_check_kpi_list($user->user_id);
+		$allkpi = $this->kpi_model->get_all_kpi_list(null, null);
+		$period = $this->period_model->get_period();
+		$org = $this->organization_model->get_organizations();
 		//var_dump($periods);
 		$data = array(
 			"title" 		=> "Daftar KPI Karyawan",
 			"menu"			=> "check-kpi",
-			"kpi"			=> $kpi
+			"period"		=> $period,
+			"org"			=> $org,
+			"kpi"			=> $kpi,
+			"allkpi"		=> $allkpi
 		);
 		$this->load->view('pages/check-kpi-view', $data);
+	}
+
+	public function get_kpi(){
+		if(!$this->check_login_api()||!$this->check_access_api()){
+			return false;
+		}
+		$this->load->model('kpi_model');
+		
+		$json = file_get_contents('php://input');
+		$obj = json_decode($json);
+		$period = $obj->period;
+		$org = $obj->organization;
+		
+		$data = $this->kpi_model->get_all_kpi_list($period, $org);
+		echo json_encode($data);
 	}
 
 	public function view_check_kpi_edit($uid) {

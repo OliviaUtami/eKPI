@@ -120,6 +120,7 @@ $route['kpi/print/(:any)'] = 'pages/print_kpi/$1';
 
 //kpi
 $route['check-kpi'] = 'pages/view_check_kpi_list';
+$route['check-kpi/api/get_kpi']['post'] = 'pages/get_kpi';
 $route['check-kpi/edit/(:any)']['get'] = 'pages/view_check_kpi_edit/$1';
 $route['check-kpi/edit/process']['post'] = 'pages/process_check_kpi_edit';
 $route['check-kpi/cancel/(:num)'] = 'pages/cancel_draft_approval/$1';

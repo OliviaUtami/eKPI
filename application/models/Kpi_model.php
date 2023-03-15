@@ -399,9 +399,38 @@ class kpi_model extends CI_Model {
             JOIN period p  ON p.draft_id = d.draft_id
             JOIN user u ON iu.user_id = u.user_id
             JOIN organization o ON i.org_id = o.org_id
-            WHERE iu.status in ('Dikirimkan','Disetujui')
+            WHERE iu.status in ('Dikirimkan')
             ORDER BY period_from DESC";
     $data = $this->db->query($sql)->result();
+    return $data;
+  }
+
+  public function get_all_kpi_list($period_id=0, $org_id=0){
+    $data = new stdClass();
+    $sqlWhere = "WHERE 1=1 ";
+    if($period_id!==null){
+      $sqlWhere = $sqlWhere." AND p.period_id = ".$period_id;
+    }
+    if($period_id!==null){
+      $sqlWhere = $sqlWhere." AND o.org_id = ".$org_id;
+    }
+    $sql = "SELECT 
+              p.period_id, 
+              DATE_FORMAT(period_from, '%d/%m/%Y') period_from, DATE_FORMAT(period_to, '%d/%m/%Y') period_to, 
+              d.draft_id, i.indicator_id, i.org_id, 
+              iu.ind_user_id, iu.user_id, coalesce(iu.status,'Belum Ada') status, 
+              iu.remarks, i.created_by, DATE_FORMAT(i.created_at, '%d/%m/%Y %H:%i:%s') created_at,
+              u.user_id, u.username, u.name, o.org_name, iu.uid
+            FROM indicator_user iu
+            JOIN indicator i ON iu.indicator_id = i.indicator_id and i.status = 'Disetujui'
+            JOIN draft d ON i.draft_id = d.draft_id
+            JOIN period p  ON p.draft_id = d.draft_id
+            JOIN user u ON iu.user_id = u.user_id
+            JOIN organization o ON i.org_id = o.org_id ".
+            $sqlWhere." ".
+            "ORDER BY period_from DESC";
+    $data->ok = 1;
+    $data->records = $this->db->query($sql)->result();
     return $data;
   }
 
