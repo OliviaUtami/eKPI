@@ -14,6 +14,10 @@ defined('BASEPATH') OR exit('No direct script access allowed');
     padding: 4px !important;
     font-size: 12px;
   }
+
+  #table-realisasi td {
+    padding: 0.75rem !important;
+  }
   
   @media print{
     body * {
@@ -21,6 +25,13 @@ defined('BASEPATH') OR exit('No direct script access allowed');
     }
     #divIsi, #divIsi * {
       visibility: visible;
+    }
+    .print-hide{
+      display: none !important;
+    }
+    a { 
+      color: black !important;
+      text-decoration: none !important; 
     }
     #divIsi {
       position: absolute;
@@ -49,14 +60,109 @@ defined('BASEPATH') OR exit('No direct script access allowed');
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.0/css/all.min.css" integrity="sha512-3PN6gfRNZEX4YFyz+sIyTF6pGlQiryJu9NlGhu9LrLMQ7eDjNgudQoFDK3WSNAayeIKc6B8WXXpo4a7HqxjKwg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
   
 <script>
-  var indikator = [];
   var tempid = 1;
-
+  const average = function(array){
+    console.log(array);
+    if(array.length>0)
+      return Math.round(array.reduce((a, b) => a + b) / array.length*100)/100
+    else
+      return null;
+  };
+  const sum = function(array){
+    console.log(array);
+    if(array.length>0)
+      return Math.round(array.reduce((a, b) => a + b)*100)/100
+    else
+      return null;
+  };
 </script>
+
+<div class="modal" id="modal-document" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"></h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      </hr>
+      <div class="modal-body">
+        <div class="row">
+          <?php if($indicator->status=="Belum Ada"||$indicator->status=="Draft"||$indicator->status=="Menunggu Revisi"){ ?>
+          <div class="col-md-10">
+            <input type="file" class="form-control file" id="inp-file" multiple/>
+            <input type="hidden" class="form-control" id="inp-detid" readonly/>
+          </div>
+          <div class="col-md-2">
+            <button type="button" class="btn btn-sm btn-primary btn-upload" style="top: 5px;position: relative;">Unggah</button>
+          </div>
+          <?php } ?>
+        </div>
+        <div class="row">
+          <div class="col-md-12">
+            <table style="width:100%; table-layout: fixed;" id="table-document" class="table table-striped table-md">
+              <thead>
+                <tr>
+                  <th style="width:5%">No</th>
+                  <th style="width:75%">Nama Dokumen</th>
+                  <th>Aksi</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td colspan="3" style="text-align:center">Tidak ada data</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal" id="modal-realisasi" tabindex="-1" role="dialog">
+  <div class="modal-dialog modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"></h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      </hr>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-md-12">
+            <table style="width:100%; table-layout: fixed;" id="table-realisasi" class="table table-striped table-md">
+              <thead>
+                <tr>
+                  <th style="width:10%">No</th>
+                  <th style="width:75%">Nama</th>
+                  <th style="width:75%">Realisasi</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr><td colspan="3" style="text-align:center">Tidak ada data</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 <!-- Main Content -->
 <div class="main-content">
   <section class="section">
     <div class="section-body">
+      <br>
+      <div class="row print-hide">
+        <div class="form-group col-md-12">
+          <div class="alert alert-danger">
+            <div class="alert-title"><b>Catatan</b></div>
+            <div class="alert-content">Nilai masih dapat berubah selama periode pengisian masih berlangsung</div>
+          </div>              
+        </div>
+      </div>
       <form id="formAdd" method="POST" action="">
         <div class="card">
           <div class="card-body">
@@ -71,10 +177,6 @@ defined('BASEPATH') OR exit('No direct script access allowed');
                 <tr>
                   <td style="width: 75px;"><b>Unit </b></td>
                   <td colspan="6" style="text-align: left;"><b><?php echo ($indicator->org_name); ?></b></td>
-                </tr>
-                <tr>
-                  <td style="width: 75px;"><b>Nama </b></td>
-                  <td colspan="6" style="text-align: left;"><b><?php echo ($indicator->name); ?></b></td>
                 </tr>
             </table>
           </div>
@@ -172,28 +274,6 @@ defined('BASEPATH') OR exit('No direct script access allowed');
     };
     row++;
 
-    //NAMA
-    ws.mergeCells(`B${row}:G${row}`);
-    ws.getCell(`A${row}`).value = "Nama";
-    ws.getCell(`A${row}`).font = {
-      name: 'Calibri',
-      family: 4,
-      size: 12,
-      underline: false,
-      bold: true
-    };
-    ws.getCell(`B${row}`).value = "<?php echo ($indicator->name); ?>";
-    ws.getCell(`B${row}`).font = {
-      name: 'Calibri',
-      family: 4,
-      size: 12,
-      underline: false,
-      bold: true
-    };
-    row++;
-    //KOSONG
-    
-
     //LOOP THROUGH INDICATOR
     var prev_sasaran = "";
     indikator.sort((a,b) => ( (a.kode_indikator).localeCompare((b.kode_indikator), 'en', { numeric: true })));
@@ -248,29 +328,40 @@ defined('BASEPATH') OR exit('No direct script access allowed');
         });
         row++;
       }
-      var input_type = "number"; var htmlInp = ""; var nilai = 0;
-      if(obj.tipe_indikator=="Persentase"||obj.tipe_indikator=="Batas Persentase"){
-        htmlInp += `${obj.realisasi+"%"??""}`;
-        if(obj.tipe_indikator=="Persentase"&&obj.realisasi!==null){
-          nilai = Math.round(parseFloat(obj.realisasi)/parseFloat(obj.target_indikator_value)*100*100)/100;
-        }else if(obj.tipe_indikator=="Batas Persentase"&&obj.realisasi!==null){
-          nilai = Math.round(parseFloat(obj.target_indikator_value)/parseFloat(obj.realisasi)*100*100)/100;
-        }
-      }else if(obj.tipe_indikator=="Angka"||obj.tipe_indikator=="Batas Angka"){
-        htmlInp += `${obj.realisasi??""}`;
-        if(obj.tipe_indikator=="Angka"&&obj.realisasi!==null){
-          nilai = Math.round(parseFloat(obj.realisasi)/parseFloat(obj.target_indikator_value)*100*100)/100;
-        }else if(obj.tipe_indikator=="Batas Angka"&&obj.realisasi!==null){
-          nilai = Math.round(parseFloat(obj.target_indikator_value)/parseFloat(obj.realisasi)*100*100)/100;
+      var input_type = "number"; var htmlInp = ""; var nilai = null;
+      obj.realisasi = null;
+      //cari realisasi tiap2 karyawan di unit tsb
+      var arr_realisasi = realisasi.filter(item=>item.ind_det_id==obj.ind_det_id);
+      obj.realisasi = average(arr_realisasi.map(item=>parseFloat(item.realisasi)));
+      obj.dokumen = (arr_realisasi==null?0:sum(arr_realisasi.map(item=>parseFloat(item.dokumen))));
+      if(obj.realisasi!==null){
+        if(obj.tipe_indikator=="Persentase"||obj.tipe_indikator=="Batas Persentase"){
+          htmlInp += `${obj.realisasi+"%"??""}`;
+          if(obj.tipe_indikator=="Persentase"&&obj.realisasi!==null){
+            nilai = Math.round(parseFloat(obj.realisasi)/parseFloat(obj.target_indikator_value)*100*100)/100;
+          }else if(obj.tipe_indikator=="Batas Persentase"&&obj.realisasi!==null){
+            nilai = Math.round(parseFloat(obj.target_indikator_value)/parseFloat(obj.realisasi)*100*100)/100;
+          }
+        }else if(obj.tipe_indikator=="Angka"||obj.tipe_indikator=="Batas Angka"){
+          htmlInp += `${obj.realisasi??""}`;
+          if(obj.tipe_indikator=="Angka"&&obj.realisasi!==null){
+            nilai = Math.round(parseFloat(obj.realisasi)/parseFloat(obj.target_indikator_value)*100*100)/100;
+          }else if(obj.tipe_indikator=="Batas Angka"&&obj.realisasi!==null){
+            nilai = Math.round(parseFloat(obj.target_indikator_value)/parseFloat(obj.realisasi)*100*100)/100;
+          }
+        }else{
+          for(var j=0; j<obj.pilihan.length; j++){
+            htmlInp += `${(obj.pilihan[j].nilai==obj.realisasi?obj.pilihan[j].nama:"")}`;
+          }
         }
       }else{
-        for(var j=0; j<obj.pilihan.length; j++){
-          htmlInp += `${(obj.pilihan[j].nilai==obj.realisasi?obj.pilihan[j].nama:"")}`;
-        }
+        htmlInp += `${obj.realisasi??"n/a"}`;
       }
       if(nilai>100)
         nilai = 100;
-      totalpersasaran+=nilai; count++;
+      if(nilai!==null){
+        totalpersasaran+=nilai; count++;
+      }
 
       //ISI PER INDIKATOR
       ws.getRow(row).alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
@@ -290,8 +381,8 @@ defined('BASEPATH') OR exit('No direct script access allowed');
       ws.getCell(`C${row}`).value = `${obj.satuan_indikator}`;
       ws.getCell(`D${row}`).value = `${htmlInp}`;
       ws.getCell(`E${row}`).value = `${((obj.tipe_indikator=="Persentase"||obj.tipe_indikator=="Batas Persentase")?obj.target_indikator+"%":obj.target_indikator)}`;
-      ws.getCell(`F${row}`).value = `${nilai}`;
-      ws.getCell(`G${row}`).value = `${obj.dokumen.length}`;
+      ws.getCell(`F${row}`).value = `${nilai??"n/a"}`;
+      ws.getCell(`G${row}`).value = `${nilai==null?"":(obj.dokumen>0?"Ada":"Tidak Ada")}`;
       row++;
       if(i==indikator.length-1||indikator[i+1].kode_sasaran!==obj.kode_sasaran){  
         countsasaran++;
@@ -426,8 +517,10 @@ defined('BASEPATH') OR exit('No direct script access allowed');
   <?php } ?>
   
   var indikator = [];
+  var realisasi = [];
 
   <?php echo "indikator = ".json_encode($indicator->details).";"; ?>
+  <?php echo "realisasi = ".json_encode($indicator->unit_details).";"; ?>
   function populateIndikator(){
     var params = {
       indicator_id: <?php echo $indicator->indicator_id; ?>
@@ -552,40 +645,51 @@ defined('BASEPATH') OR exit('No direct script access allowed');
                           </tr>
                         `;
       }
-      var input_type = "number"; var htmlInp = ""; var nilai = 0;
-      if(obj.tipe_indikator=="Persentase"||obj.tipe_indikator=="Batas Persentase"){
-        htmlInp += `${obj.realisasi+"%"??""}`;
-        if(obj.tipe_indikator=="Persentase"&&obj.realisasi!==null){
-          nilai = Math.round(parseFloat(obj.realisasi)/parseFloat(obj.target_indikator_value)*100*100)/100;
-        }else if(obj.tipe_indikator=="Batas Persentase"&&obj.realisasi!==null){
-          nilai = Math.round(parseFloat(obj.target_indikator_value)/parseFloat(obj.realisasi)*100*100)/100;
-        }
-      }else if(obj.tipe_indikator=="Angka"||obj.tipe_indikator=="Batas Angka"){
-        htmlInp += `${obj.realisasi??""}`;
-        if(obj.tipe_indikator=="Angka"&&obj.realisasi!==null){
-          nilai = Math.round(parseFloat(obj.realisasi)/parseFloat(obj.target_indikator_value)*100*100)/100;
-        }else if(obj.tipe_indikator=="Angka"&&obj.realisasi!==null){
-          nilai = Math.round(parseFloat(obj.target_indikator_value)/parseFloat(obj.realisasi)*100*100)/100;
+      var input_type = "number"; var htmlInp = ""; var nilai = null;
+      obj.realisasi = null;
+      //cari realisasi tiap2 karyawan di unit tsb
+      var arr_realisasi = realisasi.filter(item=>item.ind_det_id==obj.ind_det_id);
+      obj.realisasi = average(arr_realisasi.map(item=>parseFloat(item.realisasi)));
+      obj.dokumen = (arr_realisasi==null?0:sum(arr_realisasi.map(item=>parseFloat(item.dokumen))));
+      //console.log("realisasi ",obj.ind_det_id,obj.kode_indikator,obj.realisasi);
+      if(obj.realisasi!==null){
+        if(obj.tipe_indikator=="Persentase"||obj.tipe_indikator=="Batas Persentase"){
+          htmlInp += `${obj.realisasi+"%"??""}`;
+          if(obj.tipe_indikator=="Persentase"&&obj.realisasi!==null){
+            nilai = Math.round(parseFloat(obj.realisasi)/parseFloat(obj.target_indikator_value)*100*100)/100;
+          }else if(obj.tipe_indikator=="Batas Persentase"&&obj.realisasi!==null){
+            nilai = Math.round(parseFloat(obj.target_indikator_value)/parseFloat(obj.realisasi)*100*100)/100;
+          }
+        }else if(obj.tipe_indikator=="Angka"||obj.tipe_indikator=="Batas Angka"){
+          htmlInp += `${obj.realisasi??""}`;
+          if(obj.tipe_indikator=="Angka"&&obj.realisasi!==null){
+            nilai = Math.round(parseFloat(obj.realisasi)/parseFloat(obj.target_indikator_value)*100*100)/100;
+          }else if(obj.tipe_indikator=="Angka"&&obj.realisasi!==null){
+            nilai = Math.round(parseFloat(obj.target_indikator_value)/parseFloat(obj.realisasi)*100*100)/100;
+          }
+        }else{
+          for(var j=0; j<obj.pilihan.length; j++){
+            htmlInp += `${(obj.pilihan[j].nilai==obj.realisasi?obj.pilihan[j].nama:"")}`;
+          }
+          nilai = parseFloat(obj.realisasi);
         }
       }else{
-        for(var j=0; j<obj.pilihan.length; j++){
-          htmlInp += `${(obj.pilihan[j].nilai==obj.realisasi?obj.pilihan[j].nama:"")}`;
-        }
-        nilai = parseFloat(obj.realisasi);
+        htmlInp += `${obj.realisasi??"n/a"}`;
       }
       if(nilai>100)
         nilai = 100;
       if(nilai!==null){
         totalpersasaran+=nilai; count++;
       }
+      console.log("dokumen "+obj.kode_indikator,obj.dokumen);
       html += `<tr>
                   <td>${obj.kode_indikator}</td>
                   <td>${obj.nama_indikator}</td>
                   <td class="center">${obj.satuan_indikator}</td>
-                  <td class="center">${htmlInp}</td>
+                  <td class="center"><a href="#" onclick="openModalRealisasi(${obj.ind_det_id});">${htmlInp}</a></td>
                   <td class="center">${((obj.tipe_indikator=="Persentase"||obj.tipe_indikator=="Batas Persentase")?obj.target_indikator+"%":obj.target_indikator)}</td>
-                  <td class="center"><span class="spanNilai">${nilai}</span></td>
-                  <td class="center"><span>${obj.dokumen.length}</span></td>
+                  <td class="center"><span class="spanNilai">${nilai??"n/a"}</span></td>
+                  <td class="center"><span>${nilai==null?"":(obj.dokumen>0?"Ada":"Tidak Ada")}</span></td>
                `;
       if(i==indikator.length-1||indikator[i+1].kode_sasaran!==obj.kode_sasaran){  
         countsasaran++;
@@ -786,6 +890,33 @@ defined('BASEPATH') OR exit('No direct script access allowed');
     downloadLink.click(); 
   }   
 
+  function populateRealisasiTable(ind_det_id){
+    var selected = realisasi.filter(item=>item.ind_det_id==ind_det_id);
+    console.log(selected);
+    var html = "";
+    for(var i=0; i<selected.length; i++){
+      var obj = selected[i];
+      html += `<tr>
+                  <td>${(i+1)}</td>
+                  <td>${(obj.name)}</td>
+                  <td>${obj.realisasi}</td>
+              </tr>`;
+    }
+    if(html==""){
+      html +=   `<tr>
+                  <td colspan="3" style="text-align: center;">Tidak ada data</td>
+                </tr>`;
+    }
+    $("#table-realisasi tbody").html(html);
+  }
+
+  function openModalRealisasi(ind_det_id){
+    var obj = realisasi.find(item=>item.ind_det_id==ind_det_id);
+    $("#modal-realisasi .modal-title").html("REALISASI");
+    $("#modal-realisasi #inp-detid").val(ind_det_id);
+    populateRealisasiTable(ind_det_id);
+    $("#modal-realisasi").modal("show");
+  };
 
   (function() {
     var extToMimes = {

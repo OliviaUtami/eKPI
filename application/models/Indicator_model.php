@@ -367,9 +367,9 @@ class indicator_model extends CI_Model {
                   JOIN `purpose` p ON  t.purpose_id = p.purpose_id
                   JOIN `mission` m on p.mission_id = m.mission_id
                   LEFT JOIN `indicator` i on m.draft_id = i.draft_id
-                  WHERE m.draft_id = ?
+                  WHERE i.indicator_id = 2 = ?
                   ORDER BY t.target_id ASC";
-      $targets = $this->db->query($sqlTarget,array($data->draft_id))->result();
+      $targets = $this->db->query($sqlTarget,array($data->indicator_id))->result();
       $tempid = 1;
       foreach($targets as $target){
         $sql   = "SELECT 
@@ -428,6 +428,19 @@ class indicator_model extends CI_Model {
                   remarks = ?
               WHERE uid = ?";
       $this->db->query($sql, array($_SESSION["username"], $status, $approved_by, $approved_at, $remarks, $uid));
+      $org = $this->db->query("select o.org_id, o.org_name 
+                                from indicator i 
+                                join organization o on i.org_id = o.org_id 
+                                where i.uid = ? ", $uid)->row();
+      
+      //notif
+      $title = "Indikator KPI untuk Unit ".$org->org_name." telah siap";
+      $content = "Indikator KPI untuk unit Anda sudah siap, silahkan mengisi KPI pada menu \"KPI Saya\" sebelum periode pengisian ditutup. ";
+      $this->db->query("INSERT INTO notification (userid, username, type, title, content, tstamp, byuser) 
+                        select u.user_id, u.username, 'INDICATOR_READY', ?, ?, ?, ? 
+                        from user u 
+                        join organization o on u.org_id = o.org_id
+                        where u.org_id = ? and u.is_active = 1", array($title, $content, date('Y-m-d H:i:s'), $_SESSION["username"],$org->org_id));      
     }else{
       $message = "Gagal Disetujui. Status Indikator Program ".$res->status."";
     }
@@ -470,4 +483,34 @@ class indicator_model extends CI_Model {
     ];
     return $data;
   }
+
+  public function get_indicator_by_uid($uid){
+    $sql = "SELECT 
+              p.name period_name,
+              p.period_id, DATE_FORMAT(period_from, '%d/%m/%Y') period_from, DATE_FORMAT(period_to, '%d/%m/%Y') period_to, 
+              p.draft_id, i.indicator_id, i.org_id, o.org_name
+            FROM indicator i
+            JOIN period p on p.draft_id = i.draft_id
+            JOIN organization o on i.org_id = o.org_id
+            WHERE i.status = 'Disetujui'  and i.uid = ?";
+    $data = $this->db->query($sql,array($uid))->row();
+    //var_dump($data);
+    $sql = "SELECT 
+              d.ind_det_id,
+              t.code kode_sasaran, t.name nama_sasaran,
+              d.kode kode_indikator, d.nama nama_indikator, d.satuan satuan_indikator, 
+              d.target target_indikator, coalesce(cv.nilai, d.target) target_indikator_value,
+              d.tipe tipe_indikator
+            FROM indicator h
+            JOIN indicator_detail d ON h.indicator_id = d.indicator_id
+            LEFT JOIN indicator_custom_value cv on d.ind_det_id = cv.ind_det_id and d.target = cv.nilai
+            JOIN program p ON d.program_id = p.program_id
+            JOIN target t ON t.target_id = p.target_id
+            WHERE h.status = 'Disetujui' and h.uid = ?
+            ORDER BY d.kode ASC ";
+    $data->details = $this->db->query($sql, array($uid))->result();
+    
+    return $data;
+  }
 }
+

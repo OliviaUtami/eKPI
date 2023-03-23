@@ -73,6 +73,7 @@ $this->load->view('pages/_partials/header');
     }
     $(document).ready(function() {
         $("#table-users").dataTable({
+            "scrollX": true,
             "fnRowCallback": function( nRow, aData, iDisplayIndex, iDisplayIndexFull ) {
                 $('td:eq(0)', nRow).html(iDisplayIndexFull +1);
             }

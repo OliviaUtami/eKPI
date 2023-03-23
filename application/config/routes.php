@@ -103,6 +103,8 @@ $route['indicator/rfa/(:num)'] = 'pages/process_indicator_rfa/$1';
 $route['indicator/publish/(:num)'] = 'pages/publish_indicator/$1';
 $route['indicator/api/get_program']['post'] = 'pages/get_program_by_target';
 $route['indicator/api/save_indicator']['post'] = 'pages/process_indicator_add';
+$route['indicator/print/(:any)'] = 'pages/print_indicator/$1';
+
 
 $route['indicator-approval'] = 'pages/view_indicator_approval_list';
 $route['indicator-approval/edit/(:any)']['get'] = 'pages/view_indicator_approval_edit/$1';
@@ -117,6 +119,7 @@ $route['kpi/api/get_indicator']['post'] = 'pages/get_indicator';
 $route['kpi/api/save_kpi']['post'] = 'pages/process_kpi_add';
 $route['kpi/submit/(:any)'] = 'pages/submit_kpi/$1';
 $route['kpi/print/(:any)'] = 'pages/print_kpi/$1';
+$route['kpi/print-unit/(:any)'] = 'pages/print_kpi_unit/$1';
 
 //kpi
 $route['check-kpi'] = 'pages/view_check_kpi_list';

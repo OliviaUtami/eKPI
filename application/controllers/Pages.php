@@ -372,6 +372,22 @@ class Pages extends CI_Controller {
 			redirect('/period/edit/'.$period_id);
 		}
 	}
+
+	public function print_indicator($uid) {
+		$this->check_login();
+		$this->check_access();
+		$this->load->model('user_model');
+		$this->load->model('indicator_model');
+		$user = $this->user_model->get_user_by_username($_SESSION["username"]);
+		$indicator = $this->indicator_model->get_indicator_by_uid($uid);
+		//var_dump(json_encode($indicator));
+		$data = array(
+			"title" 		=> "Indikator KPI",
+			"menu"			=> "indicator",
+			"indicator"		=> $indicator
+		);
+		$this->load->view('pages/indicator-print', $data);
+	}
 	/** PAGE INDICATOR - END */
 
 	/** PAGE DRAFT - START */
@@ -774,6 +790,22 @@ class Pages extends CI_Controller {
 		);
 		$this->load->view('pages/kpi-print', $data);
 	}
+
+	public function print_kpi_unit($uid) {
+		$this->check_login();
+		$this->check_access();
+		$this->load->model('user_model');
+		$this->load->model('kpi_model');
+		$user = $this->user_model->get_user_by_username($_SESSION["username"]);
+		$indicator = $this->kpi_model->get_indicator_by_uid($uid);
+		//var_dump(json_encode($indicator));
+		$data = array(
+			"title" 		=> "Pratinjau KPI Unit",
+			"menu"			=> "kpi",
+			"indicator"		=> $indicator
+		);
+		$this->load->view('pages/kpi-print-unit', $data);
+	}
 	/** PAGE KPI - END */
 
 	/** PAGE CHECK KPI - START */
@@ -807,7 +839,6 @@ class Pages extends CI_Controller {
 			return false;
 		}
 		$this->load->model('kpi_model');
-		
 		$json = file_get_contents('php://input');
 		$obj = json_decode($json);
 		$period = $obj->period;

@@ -407,28 +407,41 @@ class kpi_model extends CI_Model {
 
   public function get_all_kpi_list($period_id=0, $org_id=0){
     $data = new stdClass();
-    $sqlWhere = "WHERE 1=1 ";
+    $sqlWhere = " ";
     if($period_id!==null){
       $sqlWhere = $sqlWhere." AND p.period_id = ".$period_id;
     }
     if($period_id!==null){
       $sqlWhere = $sqlWhere." AND o.org_id = ".$org_id;
     }
-    $sql = "SELECT 
-              p.period_id, 
+    $sql = "select 
+              i.uid
+            from period p
+            join draft d on p.draft_id = d.draft_id
+            cross join organization o on o.is_active = 1
+            left join indicator i on i.org_id = o.org_id and i.draft_id = d.draft_id
+            where p.status = 'Aktif' and d.status = 'Disetujui' and i.status = 'Disetujui' and o.org_id = ? and p.period_id = ?
+            order by p.period_from desc, d.name asc, o.org_name;";
+    $count = $this->db->query($sql,array($org_id, $period_id))->row();
+    $data->indicator_ready = ($count==null?0:1);
+    $data->uid = ($count==null?"":$count->uid);
+    $sql = "select 
+              p.period_id, p.name period_name, 
               DATE_FORMAT(period_from, '%d/%m/%Y') period_from, DATE_FORMAT(period_to, '%d/%m/%Y') period_to, 
-              d.draft_id, i.indicator_id, i.org_id, 
-              iu.ind_user_id, iu.user_id, coalesce(iu.status,'Belum Ada') status, 
-              iu.remarks, i.created_by, DATE_FORMAT(i.created_at, '%d/%m/%Y %H:%i:%s') created_at,
-              u.user_id, u.username, u.name, o.org_name, iu.uid
-            FROM indicator_user iu
-            JOIN indicator i ON iu.indicator_id = i.indicator_id and i.status = 'Disetujui'
-            JOIN draft d ON i.draft_id = d.draft_id
-            JOIN period p  ON p.draft_id = d.draft_id
-            JOIN user u ON iu.user_id = u.user_id
-            JOIN organization o ON i.org_id = o.org_id ".
-            $sqlWhere." ".
-            "ORDER BY period_from DESC";
+              p.status period_status, p.draft_id,
+              d.name draft_name, d.status draft_status,
+              o.org_name, coalesce(i.status, 'Belum Ada') indicator_status, 
+              u.name, u.username, coalesce(iu.status, 'Belum Ada') kpi_status,
+              coalesce(iu.created_by,'-') created_by, coalesce(DATE_FORMAT(iu.created_at, '%d/%m/%Y %H:%i:%s'),'') created_at,
+              iu.uid
+            from period p
+            join draft d on p.draft_id = d.draft_id
+            cross join organization o on o.is_active = 1
+            left join indicator i on i.org_id = o.org_id and i.draft_id = d.draft_id
+            cross join user u on u.is_active = 1 and o.org_id = u.org_id
+            left join indicator_user iu on i.indicator_id = iu.indicator_id and u.user_id = iu.user_id 
+            where p.status = 'Aktif' and d.status = 'Disetujui' ".$sqlWhere."
+            order by p.period_from desc, d.name asc, o.org_name, coalesce(iu.user_role_id,u.role_id), u.name";
     $data->ok = 1;
     $data->records = $this->db->query($sql)->result();
     return $data;
@@ -485,4 +498,51 @@ class kpi_model extends CI_Model {
     ];
     return $data;
   }
+
+  public function get_indicator_by_uid($uid){
+    $sql = "SELECT 
+              p.name period_name,
+              p.period_id, DATE_FORMAT(period_from, '%d/%m/%Y') period_from, DATE_FORMAT(period_to, '%d/%m/%Y') period_to, 
+              p.draft_id, i.indicator_id, i.org_id, o.org_name
+            FROM indicator i
+            JOIN period p on p.draft_id = i.draft_id
+            JOIN organization o on i.org_id = o.org_id
+            WHERE i.status = 'Disetujui'  and i.uid = ?";
+    $data = $this->db->query($sql,array($uid))->row();
+    //var_dump($data);
+    $sql = "SELECT 
+              d.ind_det_id,
+              t.code kode_sasaran, t.name nama_sasaran,
+              d.kode kode_indikator, d.nama nama_indikator, d.satuan satuan_indikator, 
+              d.target target_indikator, coalesce(cv.nilai, d.target) target_indikator_value,
+              d.tipe tipe_indikator
+            FROM indicator h
+            JOIN indicator_detail d ON h.indicator_id = d.indicator_id
+            LEFT JOIN indicator_custom_value cv on d.ind_det_id = cv.ind_det_id and d.target = cv.nilai
+            JOIN program p ON d.program_id = p.program_id
+            JOIN target t ON t.target_id = p.target_id
+            WHERE h.status = 'Disetujui' and h.uid = ?
+            ORDER BY d.kode ASC ";
+    $data->details = $this->db->query($sql, array($uid))->result();
+
+    $sql = "select iud.ind_det_id, realisasi, u.name, iud.ind_user_det_id
+            from indicator i
+            join indicator_detail id on i.indicator_id = id.indicator_id
+            left join indicator_user_detail iud on id.ind_det_id = iud.ind_det_id
+            left join indicator_user iu on iud.ind_user_id = iu.ind_user_id
+            left join user u on iu.user_id = u.user_id
+            where i.status = 'Disetujui' and i.uid = ? and iud.realisasi is not null
+            order by id.kode, u.name";
+    $data->unit_details = $this->db->query($sql, array($uid))->result();
+    foreach ($data->unit_details as $det){
+      $sql = "SELECT count(1) cnt
+              FROM indicator_user_det_file f
+              WHERE ind_user_det_id = ? ORDER BY FILE_ID ASC ";
+      $dokumen = $this->db->query($sql,array($det->ind_user_det_id))->row();
+      $det->dokumen = $dokumen->cnt;
+    }
+
+    return $data;
+  }
+  
 }

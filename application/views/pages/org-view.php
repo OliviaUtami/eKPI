@@ -64,6 +64,7 @@ $this->load->view('pages/_partials/header');
     }
     $(document).ready(function() {
         $("#table-users").dataTable({
+            "scrollX": true,
             "columnDefs": [
                 { width: 20, targets: 0 },
                 { width: 30, targets: -1 }

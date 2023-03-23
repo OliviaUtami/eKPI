@@ -102,40 +102,25 @@ $this->load->view('pages/_partials/header');
                   </div>
                 </div>
                 <br>
+                <button class="btn btn-md btn-primary btn-unit-action disabled" style="float: right; margin-left: 8px;" onclick="print_kpi_unit(this)" title="Pratinjau Hasil KPI Unit" disabled="disabled">Pratinjau Hasil KPI Unit</button>
+                <button class="btn btn-md btn-primary btn-unit-action disabled" style="float: right;" onclick="print_indicator(this)" title="Cetak Indikator Unit" disabled="disabled">Cetak Indikator KPI</button>&nbsp;
+                <br>
+                <h5>Daftar KPI</h5>
                 <table id="table-kpi" class="table table-striped table-bordered" cellspacing="0" width="100%">
                     <thead>
                         <tr>
                             <th>No</th>
                             <th>Periode Pengisian</th>
                             <th>Unit</th>
+                            <th>Status Indikator</th>
                             <th>Karyawan</th>
-                            <th>Status</th>
+                            <th>Status KPI</th>
                             <th>Dibuat Oleh</th>
                             <th>Tindakan</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach ($kpi as $data){ ?>
-                            <tr>
-                                <td></td>
-                                <td><?php echo($data->period_from." - ".$data->period_to); ?></td>
-                                <td><?php echo($data->org_name); ?></td>
-                                <td><?php echo($data->name); ?></td>
-                                <td><?php echo($data->status); ?></td>
-                                <td><?php echo($data->created_by."<br/>".$data->created_at); ?></td>
-                                <td>
-                                    <?php if($data->status=="Belum Ada"){ ?>
-                                    <button class="btn btn-sm btn-warning" onclick="openKPI(<?php echo $data->indicator_id; ?>)" title="Isi KPI"><i class="fa fa-edit"></i></button>
-                                    <?php }else{ ?>
-                                      <button class="btn btn-sm btn-success" onclick="openExist('<?php echo $data->uid; ?>')" title="Cek KPI"><i class="fa fa-edit"></i></button>
-                                      <button class="btn btn-sm btn-primary" onclick="print('<?php echo $data->uid; ?>')" title="Print KPI"><i class="fa fa-print"></i></button>
-                                    <?php } ?>
-                                    <?php if($data->ind_user_id!==NULL&&$data->ind_user_id!==-1&&($data->status=="Draft"||$data->status=="Menunggu Revisi")){ ?>
-                                    <button class="btn btn-sm btn-primary" onclick="sendKPI('<?php echo $data->uid; ?>')" title="Kirimkan KPI"><i class="fa fa-paper-plane"></i></button>
-                                    <?php } ?>
-                                </td>
-                            </tr>
-                        <?php } ?>
+                        
                     </tbody>
                     <!-- <tfoot>
                         <tr>
@@ -166,6 +151,7 @@ $this->load->view('pages/_partials/header');
         $("#cboPeriod").select2({ width: '100%', placeholder: "Pilih periode" });      
         $("#cboUnit").select2({ width: '100%', placeholder: "Pilih unit" });      
         $("#table-list").dataTable({
+            "scrollX": true,
             "columnDefs": [
                 { width: 20, targets: 0 },
                 { width: 30, targets: -1 }
@@ -177,8 +163,9 @@ $this->load->view('pages/_partials/header');
           }
         );
         $("#table-kpi").dataTable({
+            "scrollX": true,
             "columnDefs": [
-                { width: 20, targets: 0 },
+                { width: 15, targets: 0 },
                 { width: 30, targets: -1 }
             ],
             "fixedColumns": true,
@@ -206,6 +193,11 @@ $this->load->view('pages/_partials/header');
           contentType: "application/json; charset=utf-8",
           success: function(data) {
             console.log(data);
+            if(data.indicator_ready==1){
+              $(".btn-unit-action").prop("disabled",false).removeClass("disabled").data("uid",data.uid);
+            }else{
+              $(".btn-unit-action").prop("disabled",true).addClass("disabled").data("uid","");
+            }
             if(data.ok==1){
               var records = data.records;
               var html = ``;
@@ -214,27 +206,29 @@ $this->load->view('pages/_partials/header');
               for(var i=0; i<records.length; i++){
                 var obj = records[i];
                 var btn = ``;
-                if(obj.status!=="Belum Ada"){
+                if(obj.kpi_status!=="Belum Ada"){
                   btn += `<button class="btn btn-sm btn-success" onclick="openExist('${obj.uid}')" title="Cek KPI"><i class="fa fa-edit"></i></button>
                           <button class="btn btn-sm btn-primary" onclick="print('${obj.uid}')" title="Print KPI"><i class="fa fa-print"></i></button>`;
                 }
-                html = `<tr>
+                html += `<tr>
                           <td></td>
-                          <td>${obj.period_from+" "+obj.period_to}</td>
+                          <td>${obj.period_from+" - "+obj.period_to}</td>
                           <td>${obj.org_name}</td>
+                          <td>${obj.indicator_status}</td>
                           <td>${obj.name}</td>
-                          <td>${obj.status}</td>
+                          <td>${obj.kpi_status}</td>
                           <td>${obj.created_by+"<br>"+obj.created_at}</td>
                           <td>
-                              ${btn}
+                              ${(obj.kpi_status!=="Belum Ada"?btn:"")}
                           </td>
                         </tr>`;
               }
               $("#table-kpi tbody").html(html);
               
               $("#table-kpi").dataTable({
+                  "scrollX": true,
                   "columnDefs": [
-                      { width: 20, targets: 0 },
+                      { width: 15, targets: 0 },
                       { width: 30, targets: -1 }
                   ],
                   "fixedColumns": true,
@@ -254,15 +248,23 @@ $this->load->view('pages/_partials/header');
     });
 
     function openKPI(indicator_id){
-      window.location.assign("kpi/add/"+indicator_id);
+      window.open("kpi/add/"+indicator_id,"_blank").focus();
     }
 
     function openExist(uid){
-      window.location.assign("check-kpi/edit/"+uid);
+      window.open("check-kpi/edit/"+uid,"_blank").focus();
     }
 
     function print(uid){
       window.open("kpi/print/"+uid, "_blank", "toolbar=no,scrollbars=yes,resizable=yes,top=100,left=100,width=1200,height=600"); 
+    }
+
+    function print_indicator(element){
+      window.open("indicator/print/"+$(element).data("uid"), "_blank", "toolbar=no,scrollbars=yes,resizable=yes,top=100,left=100,width=1200,height=600"); 
+    }
+
+    function print_kpi_unit(element){
+      window.open("kpi/print-unit/"+$(element).data("uid"), "_blank", "toolbar=no,scrollbars=yes,resizable=yes,top=100,left=100,width=1200,height=600"); 
     }
 
     function sendKPI(indicator_id){

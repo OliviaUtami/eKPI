@@ -56,6 +56,7 @@ $this->load->view('pages/_partials/header');
     }
     $(document).ready(function() {
         $("#table-notification").dataTable({
+            "scrollX": true,
             "columnDefs": [
                 { width: 20, targets: 0 },
                 { width: 150, targets: -2 },

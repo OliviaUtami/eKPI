@@ -311,7 +311,7 @@ $this->load->view('pages/_partials/header');
                         </thead>
                         <tbody>`;
       }
-      var input_type = "number"; var htmlInp = ""; var nilai = 0;
+      var input_type = "number"; var htmlInp = ""; var nilai = null;
       if(obj.tipe_indikator=="Persentase"||obj.tipe_indikator=="Batas Persentase"){
           <?php if($indicator->status=="Draft"||$indicator->status=="Menunggu Revisi"){ ?>
             htmlInp += `<input type="text" class="form-control percentage inpReal smallInput" autocomplete="off" data-detid="${obj.ind_det_id}" value="${obj.realisasi??""}"/>`;
@@ -320,9 +320,9 @@ $this->load->view('pages/_partials/header');
           <?php } ?>
 
           if(obj.tipe_indikator=="Persentase"&&obj.realisasi!==null&&obj.realisasi!==""){
-            nilai = Math.round(parseInt(obj.realisasi)/parseInt(obj.target_indikator_value)*100*100)/100;
+            nilai = Math.round(parseFloat(obj.realisasi)/parseFloat(obj.target_indikator_value)*100*100)/100;
           }else if(obj.tipe_indikator=="Batas Persentase"&&obj.realisasi!==null&&obj.realisasi!==""){
-            nilai = Math.round((parseInt(obj.target_indikator_value)-parseInt(obj.realisasi))/parseInt(obj.target)*100*100)/100;
+            nilai = Math.round(parseFloat(obj.target_indikator_value)/parseFloat(obj.realisasi)*100*100)/100;
           }
       }else if(obj.tipe_indikator=="Angka"||obj.tipe_indikator=="Batas Angka"){
         <?php if($indicator->status=="Draft"||$indicator->status=="Menunggu Revisi"){ ?>
@@ -332,9 +332,9 @@ $this->load->view('pages/_partials/header');
         <?php } ?>
 
         if(obj.tipe_indikator=="Angka"&&obj.realisasi!==null&&obj.realisasi!==""){
-          nilai = Math.round(parseInt(obj.realisasi)/parseInt(obj.target_indikator_value)*100*100)/100;
-        }else if(obj.tipe_indikator=="Angka"&&obj.realisasi!==null&&obj.realisasi!==""){
-          nilai = Math.round((parseInt(obj.target_indikator_value)-parseInt(obj.realisasi))/parseInt(obj.target_indikator_value)*100*100)/100;
+          nilai = Math.round(parseFloat(obj.realisasi)/parseFloat(obj.target_indikator_value)*100*100)/100;
+        }else if(obj.tipe_indikator=="Batas Angka"&&obj.realisasi!==null&&obj.realisasi!==""){
+          nilai = Math.round(parseFloat(obj.target_indikator_value)/parseFloat(obj.realisasi)*100*100)/100;
         }
       }else{
         <?php if($indicator->status=="Draft"||$indicator->status=="Menunggu Revisi"){ ?>
@@ -348,8 +348,13 @@ $this->load->view('pages/_partials/header');
           htmlInp += `<div style="text-align:center;">${selected.nama??""}</div>`;
         <?php } ?>
         if(obj.realisasi!==null){
-          nilai = parseInt(obj.realisasi);
+          nilai = parseFloat(obj.realisasi);
         }
+      }
+      if(nilai>100)
+        nilai = 100;
+      if(nilai!==null){
+        totalpersasaran+=nilai; count++;
       }
       totalpersasaran+=nilai; count++;
       html += `<tr>
@@ -418,7 +423,7 @@ $this->load->view('pages/_partials/header');
     {
       // Filter non-digits from input value.
       this.value = this.value.replace(/\D/g, '');
-      if(parseInt(this.value)>100)
+      if(parseFloat(this.value)>100)
         this.value = 100;
     }
   });

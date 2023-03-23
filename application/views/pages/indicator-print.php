@@ -72,10 +72,6 @@ defined('BASEPATH') OR exit('No direct script access allowed');
                   <td style="width: 75px;"><b>Unit </b></td>
                   <td colspan="6" style="text-align: left;"><b><?php echo ($indicator->org_name); ?></b></td>
                 </tr>
-                <tr>
-                  <td style="width: 75px;"><b>Nama </b></td>
-                  <td colspan="6" style="text-align: left;"><b><?php echo ($indicator->name); ?></b></td>
-                </tr>
             </table>
           </div>
           <div class="card-footer bg-whitesmoke">
@@ -172,28 +168,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
     };
     row++;
 
-    //NAMA
-    ws.mergeCells(`B${row}:G${row}`);
-    ws.getCell(`A${row}`).value = "Nama";
-    ws.getCell(`A${row}`).font = {
-      name: 'Calibri',
-      family: 4,
-      size: 12,
-      underline: false,
-      bold: true
-    };
-    ws.getCell(`B${row}`).value = "<?php echo ($indicator->name); ?>";
-    ws.getCell(`B${row}`).font = {
-      name: 'Calibri',
-      family: 4,
-      size: 12,
-      underline: false,
-      bold: true
-    };
-    row++;
-    //KOSONG
     
-
     //LOOP THROUGH INDICATOR
     var prev_sasaran = "";
     indikator.sort((a,b) => ( (a.kode_indikator).localeCompare((b.kode_indikator), 'en', { numeric: true })));
@@ -248,28 +223,8 @@ defined('BASEPATH') OR exit('No direct script access allowed');
         });
         row++;
       }
-      var input_type = "number"; var htmlInp = ""; var nilai = 0;
-      if(obj.tipe_indikator=="Persentase"||obj.tipe_indikator=="Batas Persentase"){
-        htmlInp += `${obj.realisasi+"%"??""}`;
-        if(obj.tipe_indikator=="Persentase"&&obj.realisasi!==null){
-          nilai = Math.round(parseFloat(obj.realisasi)/parseFloat(obj.target_indikator_value)*100*100)/100;
-        }else if(obj.tipe_indikator=="Batas Persentase"&&obj.realisasi!==null){
-          nilai = Math.round(parseFloat(obj.target_indikator_value)/parseFloat(obj.realisasi)*100*100)/100;
-        }
-      }else if(obj.tipe_indikator=="Angka"||obj.tipe_indikator=="Batas Angka"){
-        htmlInp += `${obj.realisasi??""}`;
-        if(obj.tipe_indikator=="Angka"&&obj.realisasi!==null){
-          nilai = Math.round(parseFloat(obj.realisasi)/parseFloat(obj.target_indikator_value)*100*100)/100;
-        }else if(obj.tipe_indikator=="Batas Angka"&&obj.realisasi!==null){
-          nilai = Math.round(parseFloat(obj.target_indikator_value)/parseFloat(obj.realisasi)*100*100)/100;
-        }
-      }else{
-        for(var j=0; j<obj.pilihan.length; j++){
-          htmlInp += `${(obj.pilihan[j].nilai==obj.realisasi?obj.pilihan[j].nama:"")}`;
-        }
-      }
-      if(nilai>100)
-        nilai = 100;
+      var input_type = "number"; var htmlInp = ""; var nilai = "";
+      
       totalpersasaran+=nilai; count++;
 
       //ISI PER INDIKATOR
@@ -291,18 +246,18 @@ defined('BASEPATH') OR exit('No direct script access allowed');
       ws.getCell(`D${row}`).value = `${htmlInp}`;
       ws.getCell(`E${row}`).value = `${((obj.tipe_indikator=="Persentase"||obj.tipe_indikator=="Batas Persentase")?obj.target_indikator+"%":obj.target_indikator)}`;
       ws.getCell(`F${row}`).value = `${nilai}`;
-      ws.getCell(`G${row}`).value = `${obj.dokumen.length}`;
+      ws.getCell(`G${row}`).value = ``;
       row++;
       if(i==indikator.length-1||indikator[i+1].kode_sasaran!==obj.kode_sasaran){  
         countsasaran++;
-        grandtotal+=Math.round(totalpersasaran/count*100)/100;
+        //grandtotal+=Math.round(totalpersasaran/count*100)/100;
         
         ws.mergeCells(`A${row}:E${row}`);
         ws.getRow(row).font = fontHeader;
         
         ws.getCell(`A${row}`).alignment = { vertical: 'middle', horizontal: 'right', wrapText: true };
         ws.getCell(`A${row}`).value = `JUMLAH`;
-        ws.getCell(`F${row}`).value = `${Math.round(totalpersasaran/count*100)/100}`;
+        ws.getCell(`F${row}`).value = ``;
         ws.getCell(`F${row}`).alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
         [`A${row}`,`F${row}`,`G${row}`].map(key => {
               ws.getCell(key).border = {
@@ -319,7 +274,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
           ws.getRow(row).font = fontHeader;
           ws.getCell(`A${row}`).alignment = { vertical: 'middle', horizontal: 'right', wrapText: true };
           ws.getCell(`A${row}`).value = `TOTAL NILAI`;
-          ws.getCell(`F${row}`).value = `${Math.round(grandtotal/countsasaran*100)/100}`;
+          ws.getCell(`F${row}`).value = ``;
           ws.getCell(`F${row}`).alignment = { vertical: 'middle', horizontal: 'center', wrapText: true };
           [`A${row}`,`F${row}`,`G${row}`].map(key => {
                 ws.getCell(key).border = {
@@ -552,32 +507,9 @@ defined('BASEPATH') OR exit('No direct script access allowed');
                           </tr>
                         `;
       }
-      var input_type = "number"; var htmlInp = ""; var nilai = 0;
-      if(obj.tipe_indikator=="Persentase"||obj.tipe_indikator=="Batas Persentase"){
-        htmlInp += `${obj.realisasi+"%"??""}`;
-        if(obj.tipe_indikator=="Persentase"&&obj.realisasi!==null){
-          nilai = Math.round(parseFloat(obj.realisasi)/parseFloat(obj.target_indikator_value)*100*100)/100;
-        }else if(obj.tipe_indikator=="Batas Persentase"&&obj.realisasi!==null){
-          nilai = Math.round(parseFloat(obj.target_indikator_value)/parseFloat(obj.realisasi)*100*100)/100;
-        }
-      }else if(obj.tipe_indikator=="Angka"||obj.tipe_indikator=="Batas Angka"){
-        htmlInp += `${obj.realisasi??""}`;
-        if(obj.tipe_indikator=="Angka"&&obj.realisasi!==null){
-          nilai = Math.round(parseFloat(obj.realisasi)/parseFloat(obj.target_indikator_value)*100*100)/100;
-        }else if(obj.tipe_indikator=="Angka"&&obj.realisasi!==null){
-          nilai = Math.round(parseFloat(obj.target_indikator_value)/parseFloat(obj.realisasi)*100*100)/100;
-        }
-      }else{
-        for(var j=0; j<obj.pilihan.length; j++){
-          htmlInp += `${(obj.pilihan[j].nilai==obj.realisasi?obj.pilihan[j].nama:"")}`;
-        }
-        nilai = parseFloat(obj.realisasi);
-      }
-      if(nilai>100)
-        nilai = 100;
-      if(nilai!==null){
-        totalpersasaran+=nilai; count++;
-      }
+      var input_type = "number"; var htmlInp = ""; var nilai = "";
+      
+      totalpersasaran+=nilai; count++;
       html += `<tr>
                   <td>${obj.kode_indikator}</td>
                   <td>${obj.nama_indikator}</td>
@@ -585,7 +517,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
                   <td class="center">${htmlInp}</td>
                   <td class="center">${((obj.tipe_indikator=="Persentase"||obj.tipe_indikator=="Batas Persentase")?obj.target_indikator+"%":obj.target_indikator)}</td>
                   <td class="center"><span class="spanNilai">${nilai}</span></td>
-                  <td class="center"><span>${obj.dokumen.length}</span></td>
+                  <td class="center"><span></span></td>
                `;
       if(i==indikator.length-1||indikator[i+1].kode_sasaran!==obj.kode_sasaran){  
         countsasaran++;
@@ -593,13 +525,13 @@ defined('BASEPATH') OR exit('No direct script access allowed');
            
         html += `<tr style="background-color: #f9f8ff;">
                   <td colspan="5" style="text-align: right">JUMLAH</td>
-                  <td class="center"><span class="spanNilai">${Math.round(totalpersasaran/count*100)/100}</span></td>
+                  <td class="center"><span class="spanNilai"></span></td>
                   <td></td>
                </tr>`;     
         if(i==indikator.length-1){
           html += `<tr style="background-color: lightgrey;">
                       <td colspan="5" style="text-align: right">TOTAL NILAI</td>
-                      <td class="center"><span class="spanNilai">${Math.round(grandtotal/countsasaran*100)/100}</span></td>
+                      <td class="center"><span class="spanNilai"></span></td>
                       <td></td>
                   </tr>`; 
         }
@@ -636,7 +568,7 @@ defined('BASEPATH') OR exit('No direct script access allowed');
     {
       // Filter non-digits from input value.
       this.value = this.value.replace(/\D/g, '');
-      if(parseFloat(this.value)>100)
+      if(parseInt(this.value)>100)
         this.value = 100;
     }
   });
